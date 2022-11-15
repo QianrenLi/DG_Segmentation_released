@@ -81,10 +81,10 @@ def load_name():
     test_inputs, test_targets, test_names = [], [], []
 
     input_pattern = glob.glob(
-        "./data/segmentation/Pro1-SegmentationData/Training_data/data/*.bmp"
+        "./data/Pro1-SegmentationData/Training_data/data/*.bmp"
     )
     targetlist = (
-        "./data/segmentation/Pro1-SegmentationData/Training_data/label/{}.bmp"
+        "./data/Pro1-SegmentationData/Training_data/label/{}.bmp"
     )
 
     input_pattern.sort()
@@ -104,9 +104,9 @@ def load_name():
     names = np.array(names)
 
     val_input_pattern = glob.glob(
-        "data/segmentation/Pro1-SegmentationData/Training_data/data/*.bmp"
+        "data/Pro1-SegmentationData/Training_data/data/*.bmp"
     )
-    val_targetlist = "data/segmentation/Pro1-SegmentationData/Training_data/label/{}.bmp"
+    val_targetlist = "data/Pro1-SegmentationData/Training_data/label/{}.bmp"
 
     val_input_pattern.sort()
 
@@ -121,10 +121,10 @@ def load_name():
             val_names.append(val_name)
 
     test_input_pattern = glob.glob(
-        "data/segmentation/Pro1-SegmentationData/Domain3/data/*.bmp"
+        "data/Pro1-SegmentationData/Domain3/data/*.bmp"
     )
     test_targetlist = (
-        "data/segmentation/Pro1-SegmentationData/Domain3/label/{}.bmp"
+        "data/Pro1-SegmentationData/Domain3/label/{}.bmp"
     )
 
     test_input_pattern.sort()
