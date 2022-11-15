@@ -63,9 +63,15 @@ class MNIST(Dataset):
             idx = idx.tolist()
         idx = self._get_index(idx)
 
+        
         # Write your code here
-
-        return None
+        # print(type(idx))
+        temp_image = cv2.imread(self.x[idx])
+        temp_image = np.array(cv2.resize(temp_image,(1634, 1634)),dtype="uint8")
+        # print(len(temp_image))
+        temp_image = temp_image.transpose(2,0,1)
+        # The return result should be C * H * W
+        return temp_image,self.y[idx],self.names[idx]
 
 
 def load_name():
@@ -75,14 +81,14 @@ def load_name():
     test_inputs, test_targets, test_names = [], [], []
 
     input_pattern = glob.glob(
-        "training input image path"
+        "./data/segmentation/Pro1-SegmentationData/Training_data/data/*.bmp"
     )
     targetlist = (
-        "training input target path"
+        "./data/segmentation/Pro1-SegmentationData/Training_data/label/{}.bmp"
     )
 
     input_pattern.sort()
-
+    
     for i in tqdm(range(len(input_pattern))):
         inputpath = input_pattern[i]
         name = analyze_name(inputpath)
@@ -98,9 +104,9 @@ def load_name():
     names = np.array(names)
 
     val_input_pattern = glob.glob(
-        "validation input path"
+        "data/segmentation/Pro1-SegmentationData/Training_data/data/*.bmp"
     )
-    val_targetlist = "validation target path"
+    val_targetlist = "data/segmentation/Pro1-SegmentationData/Training_data/label/{}.bmp"
 
     val_input_pattern.sort()
 
@@ -115,10 +121,10 @@ def load_name():
             val_names.append(val_name)
 
     test_input_pattern = glob.glob(
-        "test input path"
+        "data/segmentation/Pro1-SegmentationData/Domain3/data/*.bmp"
     )
     test_targetlist = (
-        "test target path"
+        "data/segmentation/Pro1-SegmentationData/Domain3/label/{}.bmp"
     )
 
     test_input_pattern.sort()
