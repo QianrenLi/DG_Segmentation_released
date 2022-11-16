@@ -1,6 +1,7 @@
 # Project 1 for advanced signal processing
 
-For simplicity, only part of the data was uploaded which is not available now for training and testing.
+## Usage
++ data file: put file in `./data/`, write your detail link --- training set, validation set, testing set --- into `input_pattern`, `val_input_pattern` and `test_input_pattern`.
 
-Packet requirement:
-
+## Dependencies
++ `pip install -r requirements.txt`
