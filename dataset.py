@@ -63,14 +63,18 @@ class MNIST(Dataset):
             idx = idx.tolist()
         idx = self._get_index(idx)
 
-        
-        # Write your code here
-        # print(type(idx))
+        # idx is int number
+        # self.x is the training set file name vector, self.y is the label set file name vector
+        # e.g [v001.bmp,v002.bmp,...,]
         temp_image = cv2.imread(self.x[idx])
+
+        # Image size normalized -- image size is different
         temp_image = np.array(cv2.resize(temp_image,(1634, 1634)),dtype="uint8")
-        # print(len(temp_image))
+
+        # Transpose dimension from H * W * C to C * H * W 
         temp_image = temp_image.transpose(2,0,1)
-        # The return result should be C * H * W
+
+        # Return image, label file name, file name
         return temp_image,self.y[idx],self.names[idx]
 
 
@@ -80,6 +84,7 @@ def load_name():
     val_inputs, val_targets, val_names = [], [], []
     test_inputs, test_targets, test_names = [], [], []
 
+    # This link represents the file link
     input_pattern = glob.glob(
         "./data/Pro1-SegmentationData/Training_data/data/*.bmp"
     )
