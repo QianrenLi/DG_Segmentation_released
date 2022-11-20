@@ -63,25 +63,9 @@ class MNIST(Dataset):
             idx = idx.tolist()
         idx = self._get_index(idx)
 
-        # idx is int number
-        # self.x is the training set file name vector, self.y is the label set file name vector
-        # e.g [v001.bmp,v002.bmp,...,]
-        temp_image = cv2.imread(self.x[idx])
+        # Write your code here
 
-        # Image size normalized -- image size is different 1634, 1634
-        temp_image = np.array(cv2.resize(temp_image,(32, 32)),dtype="uint8")
-
-        # Transpose dimension from H * W * C to C * H * W 
-        temp_image = temp_image.transpose(2,0,1)
-
-        # Return the label image:
-        label_image = cv2.imread(self.y[idx],cv2.IMREAD_GRAYSCALE)
-        label_image = np.array((cv2.resize(label_image,(32, 32))/255),dtype="uint8")
-        # label_image = label_image.transpose(1,0)
-        # Return image, label file name, file name
-        if self.train == True:
-            return temp_image,label_image
-        return temp_image,label_image,self.names[idx]
+        return None
 
 
 def load_name():
@@ -90,16 +74,15 @@ def load_name():
     val_inputs, val_targets, val_names = [], [], []
     test_inputs, test_targets, test_names = [], [], []
 
-    # This link represents the file link
     input_pattern = glob.glob(
-        "./data/Pro1-SegmentationData/Domain3/data/*.bmp"
+        "training input image path"
     )
     targetlist = (
-        "./data/Pro1-SegmentationData/Domain3/label/{}.bmp"
+        "training input target path"
     )
 
     input_pattern.sort()
-    
+
     for i in tqdm(range(len(input_pattern))):
         inputpath = input_pattern[i]
         name = analyze_name(inputpath)
@@ -115,9 +98,9 @@ def load_name():
     names = np.array(names)
 
     val_input_pattern = glob.glob(
-        "data/Pro1-SegmentationData/Domain3/data/*.bmp"
+        "validation input path"
     )
-    val_targetlist = "data/Pro1-SegmentationData/Domain3/label/{}.bmp"
+    val_targetlist = "validation target path"
 
     val_input_pattern.sort()
 
@@ -132,10 +115,10 @@ def load_name():
             val_names.append(val_name)
 
     test_input_pattern = glob.glob(
-        "data/Pro1-SegmentationData/Domain2/data/*.bmp"
+        "test input path"
     )
     test_targetlist = (
-        "data/Pro1-SegmentationData/Domain2/label/{}.bmp"
+        "test target path"
     )
 
     test_input_pattern.sort()
