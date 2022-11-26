@@ -132,10 +132,12 @@ def load_name():
             val_names.append(val_name)
 
     test_input_pattern = glob.glob(
-        "data/Pro1-SegmentationData/Domain2/data/*.bmp"
+        # "data/Pro1-SegmentationData/Domain2/data/*.bmp"
+        "data/Pro1-SegmentationData/Training_data/data/*.bmp"
     )
     test_targetlist = (
-        "data/Pro1-SegmentationData/Domain2/label/{}.bmp"
+        # "data/Pro1-SegmentationData/Domain2/label/{}.bmp"
+        "data/Pro1-SegmentationData/Training_data/label/{}.bmp"
     )
 
     test_input_pattern.sort()
