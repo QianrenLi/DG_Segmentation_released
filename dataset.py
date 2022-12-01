@@ -69,14 +69,15 @@ class MNIST(Dataset):
         temp_image = cv2.imread(self.x[idx])
 
         # Image size normalized -- image size is different 1634, 1634
-        temp_image = np.array(cv2.resize(temp_image,(32, 32)),dtype="uint8")
+        N = 32 * 12
+        temp_image = np.array(cv2.resize(temp_image,(N, N)),dtype="uint8")
 
         # Transpose dimension from H * W * C to C * H * W 
         temp_image = temp_image.transpose(2,0,1)
 
         # Return the label image:
         label_image = cv2.imread(self.y[idx],cv2.IMREAD_GRAYSCALE)
-        label_image = np.array((cv2.resize(label_image,(32, 32))/255),dtype="uint8")
+        label_image = np.array((cv2.resize(label_image,(N, N))/255),dtype="uint8")
         # label_image = label_image.transpose(1,0)
         # Return image, label file name, file name
         if self.train == True:
@@ -92,10 +93,10 @@ def load_name():
 
     # This link represents the file link
     input_pattern = glob.glob(
-        "./data/Pro1-SegmentationData/Domain3/data/*.bmp"
+        "./data/Pro1-SegmentationData/Training_data/data/*.bmp"
     )
     targetlist = (
-        "./data/Pro1-SegmentationData/Domain3/label/{}.bmp"
+        "./data/Pro1-SegmentationData/Training_data/label/{}.bmp"
     )
 
     input_pattern.sort()
@@ -115,9 +116,9 @@ def load_name():
     names = np.array(names)
 
     val_input_pattern = glob.glob(
-        "data/Pro1-SegmentationData/Domain3/data/*.bmp"
+        "data/Pro1-SegmentationData/Training_data/data/*.bmp"
     )
-    val_targetlist = "data/Pro1-SegmentationData/Domain3/label/{}.bmp"
+    val_targetlist = "data/Pro1-SegmentationData/Training_data/label/{}.bmp"
 
     val_input_pattern.sort()
 
@@ -132,12 +133,10 @@ def load_name():
             val_names.append(val_name)
 
     test_input_pattern = glob.glob(
-        # "data/Pro1-SegmentationData/Domain2/data/*.bmp"
-        "data/Pro1-SegmentationData/Training_data/data/*.bmp"
+        "data/Pro1-SegmentationData/Domain2/data/*.bmp"
     )
     test_targetlist = (
-        # "data/Pro1-SegmentationData/Domain2/label/{}.bmp"
-        "data/Pro1-SegmentationData/Training_data/label/{}.bmp"
+        "data/Pro1-SegmentationData/Domain2/label/{}.bmp"
     )
 
     test_input_pattern.sort()
