@@ -85,7 +85,12 @@ class MNIST(Dataset):
         return temp_image,label_image,self.names[idx]
 
 
-def load_name():
+def load_name(train_data_str = "./data/Pro1-SegmentationData/Training_data/data/*.bmp", \
+                train_label_str = "./data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
+                valid_data_str = "data/Pro1-SegmentationData/Training_data/data/*.bmp", \
+                valid_label_str = "data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
+                test_data_str = "data/Pro1-SegmentationData/Domain2/data/*.bmp", \
+                test_label_str = "data/Pro1-SegmentationData/Domain2/label/{}.bmp"):
 
     inputs, targets, names = [], [], []
     val_inputs, val_targets, val_names = [], [], []
@@ -93,10 +98,10 @@ def load_name():
 
     # This link represents the file link
     input_pattern = glob.glob(
-        "./data/Pro1-SegmentationData/Training_data/data/*.bmp"
+        train_data_str
     )
     targetlist = (
-        "./data/Pro1-SegmentationData/Training_data/label/{}.bmp"
+        train_label_str
     )
 
     input_pattern.sort()
@@ -116,9 +121,9 @@ def load_name():
     names = np.array(names)
 
     val_input_pattern = glob.glob(
-        "data/Pro1-SegmentationData/Training_data/data/*.bmp"
+        valid_data_str
     )
-    val_targetlist = "data/Pro1-SegmentationData/Training_data/label/{}.bmp"
+    val_targetlist = valid_label_str
 
     val_input_pattern.sort()
 
@@ -133,10 +138,10 @@ def load_name():
             val_names.append(val_name)
 
     test_input_pattern = glob.glob(
-        "data/Pro1-SegmentationData/Domain2/data/*.bmp"
+        test_data_str
     )
     test_targetlist = (
-        "data/Pro1-SegmentationData/Domain2/label/{}.bmp"
+        test_label_str
     )
 
     test_input_pattern.sort()
@@ -183,7 +188,8 @@ def load_dataset(train=True):
         test_targets,
         test_names,
     ) = load_name()
-    print("Length of new inputs:", len(inputs))
+
+    # print("Length of new inputs:", len(inputs))
     # mean & variance
     normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 
@@ -257,3 +263,88 @@ def load_dataset(train=True):
         return train_dataset, val_dataset
     else:
         return test_dataset
+
+def domain_generization(original_image, num_generalized):
+    # Requiring input image shape as (C,H,W)
+
+    domain_pattern_1 = glob.glob(
+        "./data/Pro1-SegmentationData/Domain1/data/*.bmp"
+    )
+    domain_pattern_2 = glob.glob(
+        "./data/Pro1-SegmentationData/Domain2/data/*.bmp"
+    )
+    domain_pattern_3 = glob.glob(
+        "./data/Pro1-SegmentationData/Domain3/data/*.bmp"
+    )
+
+    domain_pattern_1.sort()
+    domain_pattern_2.sort()
+    domain_pattern_3.sort()
+    inputs = []
+    # Here the domain set contain all the data
+
+    for i in range(len(domain_pattern_1)):
+        inputpath = domain_pattern_1[i]
+        if os.path.exists(inputpath):
+            inputs.append(inputpath)
+
+    for i in range(len(domain_pattern_2)):
+        inputpath = domain_pattern_2[i]
+        if os.path.exists(inputpath):
+            inputs.append(inputpath)
+
+    for i in range(len(domain_pattern_2)):
+        inputpath = domain_pattern_2[i]
+        if os.path.exists(inputpath):
+            inputs.append(inputpath)
+
+    inputs = np.array(inputs)
+    length_inputs = len(inputs)
+
+    # Testing
+    H_value = 32 * 12
+    W_value = 32 * 12
+    
+    scaling_factor = 0.1
+    # Actual value
+    # H_value = original_image.shape[0]
+    # W_value = original_image.shape[1]
+
+    H_left = np.ceil(H_value/2 - H_value * scaling_factor/2)
+    H_right = np.ceil(H_value/2 + H_value * scaling_factor/2)
+    W_left = np.ceil(W_value/2 - W_value * scaling_factor/2)
+    W_right = np.ceil(W_value/2 + W_value * scaling_factor/2)
+
+
+    import random
+    indexs = random.sample(range(length_inputs),num_generalized)
+    for i in range(num_generalized):
+        print(type(str(inputs[indexs[i]])))
+        generalized_image = cv2.imread((inputs[indexs[i]]))
+        generalized_image = generalized_image.transpose(2,0,1)
+
+        # Do FFT to each channel
+        amplitude_generalized_image = np.abs(np.fft.fftshift(np.fft.fft2(generalized_image)))
+
+
+        amplitude_original_image= np.abs(np.fft.fftshift(np.fft.fft2(original_image)))
+
+
+        phase_original_image = np.angle(np.fft.fftshift(np.fft.fft2(original_image)))
+
+
+
+
+        # Cacaded shape as 0.1 * 0.1 of original freqency shape
+        amplitude_original_image[H_left:H_right,W_left:W_right] \
+            = amplitude_generalized_image[H_left:H_right,W_left:W_right] 
+        # Replace the amplitude
+        
+        # Output generalized image
+        generalized_image = np.fft.ifft2(amplitude_original_image * np.exp(phase_original_image))
+
+        print(generalized_image.shape)
+        # print(type(generalized_image))
+
+            
+domain_generization(1)
