@@ -264,9 +264,8 @@ def load_dataset(train=True):
     else:
         return test_dataset
 
-def domain_generization(original_image, num_generalized):
-    # Requiring input image shape as (C,H,W)
-
+def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_generalized=1):
+    # Requiring unnormalized input image shape as (C,H,W)
     domain_pattern_1 = glob.glob(
         "./data/Pro1-SegmentationData/Domain1/data/*.bmp"
     )
@@ -293,58 +292,48 @@ def domain_generization(original_image, num_generalized):
         if os.path.exists(inputpath):
             inputs.append(inputpath)
 
-    for i in range(len(domain_pattern_2)):
-        inputpath = domain_pattern_2[i]
+    for i in range(len(domain_pattern_3)):
+        inputpath = domain_pattern_3[i]
         if os.path.exists(inputpath):
             inputs.append(inputpath)
 
     inputs = np.array(inputs)
     length_inputs = len(inputs)
 
-    # Testing
-    H_value = 32 * 12
-    W_value = 32 * 12
-    
-    scaling_factor = 0.1
-    # Actual value
-    # H_value = original_image.shape[0]
-    # W_value = original_image.shape[1]
+    H_value = original_image.shape[1]
+    W_value = original_image.shape[2]
 
-    H_left = np.ceil(H_value/2 - H_value * scaling_factor/2)
-    H_right = np.ceil(H_value/2 + H_value * scaling_factor/2)
-    W_left = np.ceil(W_value/2 - W_value * scaling_factor/2)
-    W_right = np.ceil(W_value/2 + W_value * scaling_factor/2)
-
+    H_left = np.ceil(H_value/2 - H_value * scaling_factor/2).astype(int)
+    H_right = np.ceil(H_value/2 + H_value * scaling_factor/2).astype(int)
+    W_left = np.ceil(W_value/2 - W_value * scaling_factor/2).astype(int)
+    W_right = np.ceil(W_value/2 + W_value * scaling_factor/2).astype(int)
 
     import random
     indexs = random.sample(range(length_inputs),num_generalized)
+    outputs = []
     for i in range(num_generalized):
-        print(type(str(inputs[indexs[i]])))
+        # print(type(str(inputs[indexs[i]])))
         generalized_image = cv2.imread((inputs[indexs[i]]))
+        generalized_image = np.array(cv2.resize(generalized_image,(H_value, W_value)),dtype="uint8")
         generalized_image = generalized_image.transpose(2,0,1)
-
+        
+        original_image = np.asarray(original_image, np.float32)
+        generalized_image = np.asarray(generalized_image,np.float32)
         # Do FFT to each channel
-        amplitude_generalized_image = np.abs(np.fft.fftshift(np.fft.fft2(generalized_image)))
+        amplitude_generalized_image = np.abs(np.fft.fftshift(np.fft.fft2(generalized_image,axes=(-2, -1)),axes=(-2, -1)))
+        amplitude_original_image= np.abs(np.fft.fftshift(np.fft.fft2(original_image,axes=(-2, -1)),axes=(-2, -1)))
+        phase_original_image = np.angle(np.fft.fftshift(np.fft.fft2(original_image,axes=(-2, -1)),axes=(-2, -1)))
 
-
-        amplitude_original_image= np.abs(np.fft.fftshift(np.fft.fft2(original_image)))
-
-
-        phase_original_image = np.angle(np.fft.fftshift(np.fft.fft2(original_image)))
-
-
-
-
-        # Cacaded shape as 0.1 * 0.1 of original freqency shape
-        amplitude_original_image[H_left:H_right,W_left:W_right] \
-            = amplitude_generalized_image[H_left:H_right,W_left:W_right] 
         # Replace the amplitude
+        amplitude_original_image[:,H_left:H_right,W_left:W_right] \
+            = ratio* amplitude_original_image[:,H_left:H_right,W_left:W_right] \
+            + (1-ratio)* amplitude_generalized_image[:,H_left:H_right,W_left:W_right] 
         
         # Output generalized image
-        generalized_image = np.fft.ifft2(amplitude_original_image * np.exp(phase_original_image))
+        generalized_image = np.real(np.fft.ifft2(amplitude_original_image * np.exp(1j*phase_original_image),axes=(-2, -1)))
 
-        print(generalized_image.shape)
+        # print(generalized_image.shape)
         # print(type(generalized_image))
-
-            
-domain_generization(1)
+        outputs.append(generalized_image)
+    
+    return outputs   
