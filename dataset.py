@@ -285,7 +285,6 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_gene
     # Here the domain set contain all the data
 
     if domain == 'random' or domain == 'domain1':
-        print('domain1')
         for i in range(len(domain_pattern_1)):
             inputpath = domain_pattern_1[i]
             if os.path.exists(inputpath):
