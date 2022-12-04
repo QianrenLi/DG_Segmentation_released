@@ -264,10 +264,12 @@ def load_dataset(train=True):
     else:
         return test_dataset
 
-def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_generalized=1):
+def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_generalized=1,domain = 'random'):
     # Requiring unnormalized input image shape as (C,H,W)
+    # domain: 'domain1', 'domain2','domain3','random'
+    # Return C*H*W images and log normalized fftshit frequency.
     domain_pattern_1 = glob.glob(
-        "./data/Pro1-SegmentationData/Domain1/data/*.bmp"
+        "./data/Pro1-SegmentationData/Domain1/data/*.jpg"
     )
     domain_pattern_2 = glob.glob(
         "./data/Pro1-SegmentationData/Domain2/data/*.bmp"
@@ -282,20 +284,24 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_gene
     inputs = []
     # Here the domain set contain all the data
 
-    for i in range(len(domain_pattern_1)):
-        inputpath = domain_pattern_1[i]
-        if os.path.exists(inputpath):
-            inputs.append(inputpath)
+    if domain == 'random' or domain == 'domain1':
+        print('domain1')
+        for i in range(len(domain_pattern_1)):
+            inputpath = domain_pattern_1[i]
+            if os.path.exists(inputpath):
+                inputs.append(inputpath)
 
-    for i in range(len(domain_pattern_2)):
-        inputpath = domain_pattern_2[i]
-        if os.path.exists(inputpath):
-            inputs.append(inputpath)
+    if domain == 'random' or domain == 'domain2':
+        for i in range(len(domain_pattern_2)):
+            inputpath = domain_pattern_2[i]
+            if os.path.exists(inputpath):
+                inputs.append(inputpath)
 
-    for i in range(len(domain_pattern_3)):
-        inputpath = domain_pattern_3[i]
-        if os.path.exists(inputpath):
-            inputs.append(inputpath)
+    if domain == 'random' or domain == 'domain3':
+        for i in range(len(domain_pattern_3)):
+            inputpath = domain_pattern_3[i]
+            if os.path.exists(inputpath):
+                inputs.append(inputpath)
 
     inputs = np.array(inputs)
     length_inputs = len(inputs)
@@ -310,7 +316,8 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_gene
 
     import random
     indexs = random.sample(range(length_inputs),num_generalized)
-    outputs = []
+    dg_outputs = []
+    dg_fre_outputs = []
     for i in range(num_generalized):
         # print(type(str(inputs[indexs[i]])))
         generalized_image = cv2.imread((inputs[indexs[i]]))
@@ -326,14 +333,15 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_gene
 
         # Replace the amplitude
         amplitude_original_image[:,H_left:H_right,W_left:W_right] \
-            = ratio* amplitude_original_image[:,H_left:H_right,W_left:W_right] \
-            + (1-ratio)* amplitude_generalized_image[:,H_left:H_right,W_left:W_right] 
+            = (1-ratio)* amplitude_original_image[:,H_left:H_right,W_left:W_right] \
+            + ratio* amplitude_generalized_image[:,H_left:H_right,W_left:W_right] 
         
         # Output generalized image
-        generalized_image = np.real(np.fft.ifft2(amplitude_original_image * np.exp(1j*phase_original_image),axes=(-2, -1)))
-
+        generalized_freq = amplitude_original_image * np.exp(1j*phase_original_image)
+        generalized_image = np.real(np.fft.ifft2(np.fft.fftshift(generalized_freq,axes=(2,1)),axes=(-2, -1)))
         # print(generalized_image.shape)
         # print(type(generalized_image))
-        outputs.append(generalized_image)
+        dg_outputs.append(generalized_image)
+        dg_fre_outputs.append(generalized_freq)
     
-    return outputs   
+    return dg_outputs,dg_fre_outputs
