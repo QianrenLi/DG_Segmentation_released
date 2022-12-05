@@ -122,9 +122,9 @@ if __name__ == '__main__':
             outputs = net(images.to(torch.float32))
             
             for idx, name in enumerate(names):
-                output_np = torch.argmax(outputs[idx], dim=0).cuda().numpy()
+                output_np = torch.argmax(outputs[idx], dim=0).cpu().numpy()
                 binary_output = np.array(output_np)
-                target_np = targets[idx].cuda().numpy().astype(np.uint8)
+                target_np = targets[idx].cpu().numpy().astype(np.uint8)
                 
                 target_1d = np.reshape(target_np, (-1, 1))
                 pred_1d = np.reshape(binary_output, (-1, 1))

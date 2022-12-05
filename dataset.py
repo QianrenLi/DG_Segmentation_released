@@ -69,7 +69,7 @@ class MNIST(Dataset):
         temp_image = cv2.imread(self.x[idx])
 
         # Image size normalized -- image size is different 1634, 1634
-        N = 32 * 12
+        N = 32 * 50
         temp_image = np.array(cv2.resize(temp_image,(N, N)),dtype="uint8")
 
         # Transpose dimension from H * W * C to C * H * W 
