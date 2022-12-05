@@ -10,7 +10,7 @@ import torch.nn as nn
 from sklearn.metrics import accuracy_score, f1_score
 #load_ext autoreload
 #autoreload 2
-
+from dataset import domain_generization
 from dataset import load_dataset
 
 if __name__ == '__main__':
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                             shuffle=False, num_workers=2)
-    print(valloader)
+    print(len(trainloader))
 
 
 
@@ -72,37 +72,56 @@ if __name__ == '__main__':
     criterion = criterion.to(device)
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
+    scaling_factor = 0.3 # 替换低频区域所占大小
+    ratio = 1 #替换区域中目标域图片的幅度比重 
+    num_generalized = 2
+    domains = 'domain2'
 
-
-    for epoch in range(20):  # loop over the dataset multiple times
+    for epoch in range(10):  # loop over the dataset multiple times
 
         running_loss = 0.0
         for i, (inputs, target) in enumerate(trainloader):
+            print(i)
+            # print(type(inputs))
+            # print(np.shape(inputs))
+            inputs2numpy = inputs.numpy()
+            # print(np.shape(inputs2numpy))
+            N = np.shape(inputs2numpy)[3]
+            dg_batch = np.zeros(shape=(num_generalized,batch_size,3,N,N),dtype=complex)
+            for batchIdx in range(batch_size):
+                original_image = inputs2numpy[batchIdx,:,:,:]
+                dg_outputs, dg_fre_outputs= np.array(domain_generization(original_image,scaling_factor, ratio,num_generalized,domains)) # 输出是一个float, 因为计算傅里叶变换的时候应该用float提高精度
+                dg_batch[:,batchIdx,:,:,:] = dg_outputs
             
-            # zero the parameter gradients
-            optimizer.zero_grad()
+            
+            inputs = dg_batch
+            for dgIdx in range(num_generalized):
+                # zero the parameter gradients
+                optimizer.zero_grad()
 
-            inputs = inputs.to(device)
-            target = target.to(device)
 
-            # forward + backward + optimizeo 
-            # change the data to float type
-            outputs = net(inputs.to(torch.float32))
-            # print((outputs.shape))
-            # print(target.to(torch.float32).dtype)
-            loss = criterion(outputs, target.long())
-            loss.backward()
-            optimizer.step()
+                input = torch.tensor(inputs[dgIdx,:,:,:,:])
+                input = input.to(device)
+                target = target.to(device)
 
-            # print statistics
-            running_loss += loss.item()
+                # forward + backward + optimizeo 
+                # change the data to float type
+                output = net(input.to(torch.float32))
+                # print((outputs.shape))
+                # print(target.to(torch.float32).dtype)
+                loss = criterion(output, target.long())
+                loss.backward()
+                optimizer.step()
+
+                # print statistics
+                running_loss += loss.item()
             if i % 20 == 19:    # print every 20 mini-batches
                 print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
                 running_loss = 0.0
 
     print('Finished Training')
 
-    PATH = './wxynet.pth'
+    PATH = './wxynet-dg.pth'
     torch.save(net.state_dict(), PATH)
 
     net = smp.Unet(
