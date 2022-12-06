@@ -102,6 +102,7 @@ if __name__ == '__main__':
 
 
                     input = torch.tensor(inputs[dgIdx,:,:,:,:])
+                    input = np.real(input)
                     input = input.to(device)
                     target = target.to(device)
 
@@ -121,8 +122,8 @@ if __name__ == '__main__':
                 # if i % 20 == 19:    # print every 20 mini-batches
                 #     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
                 #     running_loss = 0.0
-            print(f'[{epoch + 1}, {epoches:5d}] loss: {running_loss / (num_generalized*len(trainloader)):.3f}')
-            running_loss = 0.0
+        print(f'[{epoch + 1}, {epoches:5d}] loss: {running_loss / (num_generalized*len(trainloader)):.3f}')
+        running_loss = 0.0
 
     print('Finished Training')
 
