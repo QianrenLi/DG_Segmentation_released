@@ -78,7 +78,7 @@ class MNIST(Dataset):
             temp_image = np.asarray(temp_image)
             temp_image = temp_image.transpose(2,0,1)
             temp_image, _ = domain_generization(temp_image,**params)
-            temp_image = np.asarray(temp_image[0]).transpose(1,2,0)
+            temp_image = np.asarray(np.real(temp_image[0])).transpose(1,2,0)
             temp_image = np.uint8(temp_image) 
             # Change into PIL
             temp_image = Image.fromarray(temp_image)
@@ -239,8 +239,8 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     input_transform_list = []
     label_transform_list = []
     if is_rotate:
-        input_transform_list.append(transforms.RandomRotation(180,resample=False,expand=False))
-        label_transform_list.append(transforms.RandomRotation(180,resample=False,expand=False))
+        input_transform_list.append(transforms.RandomRotation(180,expand=False)) # 在torchvision新版本中，没有resample属性
+        label_transform_list.append(transforms.RandomRotation(180,expand=False))
     elif is_translate:
         # 0.1,0.1 is the factor
         input_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=0))
