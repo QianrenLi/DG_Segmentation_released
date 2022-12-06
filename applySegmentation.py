@@ -25,7 +25,7 @@ if __name__ == '__main__':
                                             shuffle=False, num_workers=2)
 
 
-    PATH = './wxynet-dg.pth'
+    PATH = './wxynet-dgDomain2 256_256 numG10 epoch20.pth'
     # torch.save(net.state_dict(), PATH)
 
     net = smp.Unet(
@@ -65,7 +65,7 @@ if __name__ == '__main__':
                 plt.subplot(1,3,3)
                 plt.imshow(binary_output,cmap='gray')
                 # print(name)
-                savePath = 'results/with DG/' + name +'.jpg'
+                savePath = 'results/wxynet-dgDomain2 256_256 numG10 epoch20/' + name +'.jpg'
                 # print(savePath)
                 plt.savefig(savePath)
                 # plt.show()
