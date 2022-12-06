@@ -7,6 +7,7 @@ import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
 from tqdm import tqdm
+from PIL import Image
 
 cv2.setNumThreads(1)
 
@@ -66,19 +67,30 @@ class MNIST(Dataset):
         # idx is int number
         # self.x is the training set file name vector, self.y is the label set file name vector
         # e.g [v001.bmp,v002.bmp,...,]
-        temp_image = cv2.imread(self.x[idx])
+        temp_image = Image.open(self.x[idx],mode='r')
+        # print(type(temp_image))
+        # print(temp_image.dtype)
 
+        temp_image = self.im_transform(temp_image)
+        # print(type(temp_image))
         # Image size normalized -- image size is different 1634, 1634
-        N = 32 * 50
-        temp_image = np.array(cv2.resize(temp_image,(N, N)),dtype="uint8")
+        # N = 32 * 50
+        # temp_image = np.array(cv2.resize(temp_image,(N, N)),dtype="uint8")
 
         # Transpose dimension from H * W * C to C * H * W 
-        temp_image = temp_image.transpose(2,0,1)
+        # temp_image = temp_image.transpose(2,0,1)
 
         # Return the label image:
-        label_image = cv2.imread(self.y[idx],cv2.IMREAD_GRAYSCALE)
-        label_image = np.array((cv2.resize(label_image,(N, N))/255),dtype="uint8")
+        # print(self.y)
+        label_image = Image.open(self.y[idx])
+
+        label_image = self.label_transform(label_image)
+        label_image = label_image.squeeze(dim = 0)
+        # print(label_image.shape)
+        # print(label_image)
+        # label_image = np.array((cv2.resize(label_image,(N, N))/255),dtype="uint8")
         # label_image = label_image.transpose(1,0)
+
         # Return image, label file name, file name
         if self.train == True:
             return temp_image,label_image
@@ -210,6 +222,7 @@ def load_dataset(train=True):
     transform = transforms.Compose(
         [
             # Try some transformation
+            transforms.Resize([256,256]),
             transforms.ToTensor(),
             normalize,
         ]
@@ -217,19 +230,22 @@ def load_dataset(train=True):
     label_transform = transforms.Compose(
         [
             # Try some transformation
+            transforms.Resize([256,256]),
+            transforms.Grayscale(1),
             transforms.ToTensor(),
         ]
     )
     test_transform = transforms.Compose(
         [
-            transforms.Resize(256),
+            transforms.Resize([256,256]),
             transforms.ToTensor(),
             normalize,
         ]
     )
     test_label_transform = transforms.Compose(
         [
-            transforms.Resize(256),
+            transforms.Resize([256,256]),
+            transforms.Grayscale(1),
             transforms.ToTensor(),
         ]
     )
@@ -307,6 +323,13 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_gene
 
     H_value = original_image.shape[1]
     W_value = original_image.shape[2]
+    normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+    temp_transform = transforms.Compose(
+    [
+        transforms.Resize([H_value,W_value]),
+        transforms.ToTensor(),
+    ]
+    )
 
     H_left = np.ceil(H_value/2 - H_value * scaling_factor/2).astype(int)
     H_right = np.ceil(H_value/2 + H_value * scaling_factor/2).astype(int)
@@ -317,14 +340,20 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_gene
     indexs = random.sample(range(length_inputs),num_generalized)
     dg_outputs = []
     dg_fre_outputs = []
+
+    #Image denormalized
+    original_image = original_image / 2 + 0.5 
+
     for i in range(num_generalized):
         # print(type(str(inputs[indexs[i]])))
-        generalized_image = cv2.imread((inputs[indexs[i]]))
-        generalized_image = np.array(cv2.resize(generalized_image,(H_value, W_value)),dtype="uint8")
-        generalized_image = generalized_image.transpose(2,0,1)
+        generalized_image = Image.open((inputs[indexs[i]]),mode='r')
+
+        generalized_image = np.asarray(temp_transform(generalized_image))
+
+
+        # generalized_image = np.array(cv2.resize(generalized_image,(H_value, W_value)),dtype="uint8")
+        # generalized_image = generalized_image.transpose(2,0,1)
         
-        original_image = np.asarray(original_image, np.float32)
-        generalized_image = np.asarray(generalized_image,np.float32)
         # Do FFT to each channel
         amplitude_generalized_image = np.abs(np.fft.fftshift(np.fft.fft2(generalized_image,axes=(-2, -1)),axes=(-2, -1)))
         amplitude_original_image= np.abs(np.fft.fftshift(np.fft.fft2(original_image,axes=(-2, -1)),axes=(-2, -1)))
