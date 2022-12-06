@@ -14,9 +14,12 @@ def CS_dist(image_1,image_2):
 
 # Other option: use the distance metric from sciki-learn
 from sklearn.metrics import DistanceMetric
+
     
-def in_cluster_distance(images,distance_metric, **params):
-    # Input data size is a 4 channel( N C H W ) numpy array
+def intra_cluster_distance(images,distance_metric, **params):
+    # Input: images is a 4 channel( N C H W ) numpy array
+    # Input: distance_metric is the function to calculate distance
+    # Input: **params is the required additional parameter for the metric function
     temp_shape = np.shape(images)
     if len(temp_shape) != 4:
         print("Invalid data size")
@@ -32,9 +35,68 @@ def in_cluster_distance(images,distance_metric, **params):
                 distance_matrix[i,j] = distance_metric(images[i,:,:,:],images[j,:,:,:],**params)
         return 2 * np.sum(distance_matrix)/(number * number)
 
+def inter_cluster_diatance(images_1,images_2, distance_type ,distance_metric, **params):
+    # Input: images_1 and images_2 are 4 channel( N C H W ) numpy arrays
+    # Input: distance_type contains 3 types: 0 - minimum, 1 - maximum, 2 - mean
+    # Input: distance_metric is the function to calculate distance
+    # Input: **params is the required additional parameter for the metric function
+    # Output: None, if not Valid;
+    #           If distance_type == 0 or 1 : minimum distance, and indexs list
+    #           If distance_type == 2      : minimum distance, and mean picture 1 and 2
+    temp_shape_1 = np.shape(images_1)
+    temp_shape_2 = np.shape(images_2)
+    if len(temp_shape_1) != 4 or len(temp_shape_2) != 4:
+        print("Data should be in [N C H W]")
+        return
+    elif temp_shape_1[1] != 3 or temp_shape_2[1] != 3:
+        print('Invalid color channel')
+        return
+    elif temp_shape_1[1:] != temp_shape_2[1:]:
+        print('Image size of two cluster is different !')
+    else:
+        if distance_type == 0 or distance_type == 1:
+            number_1 = temp_shape_1[0]
+            number_2 = temp_shape_2[0]
+            distance_matrix = np.zeros((number_1,number_2))
+            for i in range(number_1):
+                for j in range(number_2):
+                    distance_matrix[i,j] = distance_metric(images_1[i,:,:,:],images_2[j,:,:,:],**params)
+
+            if distance_type == 0:
+                index = int(distance_matrix.argmin())
+                row_num = int(index / number_2)
+                col_num = index % number_2
+                return distance_matrix[row_num,col_num], [row_num,col_num]
+
+            else:
+                index = int(distance_matrix.argmax())
+                row_num = int(index / number_2)
+                col_num = index % number_2
+                return distance_matrix[row_num,col_num], [row_num,col_num]
+
+        elif distance_type == 2:
+            mean_image_1 = np.mean(images_1,axis= 0)
+            mean_image_2 = np.mean(images_2,axis= 0)
+            return distance_metric(mean_image_1,mean_image_2,**params), [mean_image_1, mean_image_2]
+        else:
+            print("Invalid distance type")
+            return None, None
+
 # Test code
-images = np.random.rand(5,3,50,50)
+
+# Intra-distance test
+
+# images = np.random.rand(5,3,50,50)
 # images = np.ones((5,3,50,50))
-# in_dis = in_cluster_distance(images,norm_dist,ord = 2)
-# in_dis = in_cluster_distance(images,CS_dist)
-print(in_dis)
+# in_dis = intra_cluster_distance(images,norm_dist,ord = 2)
+# in_dis = intra_cluster_distance(images,CS_dist)
+# print(in_dis)
+
+# Inter-distance test
+
+# images_1 = np.random.rand(5,3,50,50)
+# images_2 = np.ones((5,3,50,50))
+# in_dis, piciture_index = inter_cluster_diatance(images_1,images_2, 2,norm_dist,ord = 2)
+# # in_dis, piciture_index = inter_cluster_diatance(images_1,images_2,CS_dist)
+# print(in_dis)
+# print(piciture_index)
