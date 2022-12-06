@@ -59,19 +59,33 @@ class MNIST(Dataset):
     def _get_index(self, idx):
         return idx
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx,is_DG = True,**params):
+        # is_DG: A bool_value to determine whether the DG is applied
         if torch.is_tensor(idx):
             idx = idx.tolist()
         idx = self._get_index(idx)
+        # To enable the same transformation, manual seed is applied
+        seed = np.random.randint(5000000)
 
         # idx is int number
         # self.x is the training set file name vector, self.y is the label set file name vector
         # e.g [v001.bmp,v002.bmp,...,]
         temp_image = Image.open(self.x[idx],mode='r')
+
+        # Do domain generization
+        if is_DG:
+            # Change into numpy
+            temp_image = np.asarray(temp_image)
+            temp_image = domain_generization(temp_image,**params)
+
+            # Change into PIL
+            temp_image = Image.fromarray(temp_image)
+
         # print(type(temp_image))
         # print(temp_image.dtype)
-
+        torch.manual_seed(seed)
         temp_image = self.im_transform(temp_image)
+
         # print(type(temp_image))
         # Image size normalized -- image size is different 1634, 1634
         # N = 32 * 50
@@ -83,7 +97,7 @@ class MNIST(Dataset):
         # Return the label image:
         # print(self.y)
         label_image = Image.open(self.y[idx])
-
+        torch.manual_seed(seed)
         label_image = self.label_transform(label_image)
         label_image = label_image.squeeze(dim = 0)
         # print(label_image.shape)
@@ -99,10 +113,10 @@ class MNIST(Dataset):
 
 def load_name(train_data_str = "./data/Pro1-SegmentationData/Training_data/data/*.bmp", \
                 train_label_str = "./data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
-                valid_data_str = "data/Pro1-SegmentationData/Training_data/data/*.bmp", \
-                valid_label_str = "data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
-                test_data_str = "data/Pro1-SegmentationData/Domain2/data/*.bmp", \
-                test_label_str = "data/Pro1-SegmentationData/Domain2/label/{}.bmp"):
+                valid_data_str = "./data/Pro1-SegmentationData/Training_data/data/*.bmp", \
+                valid_label_str = "./data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
+                test_data_str = "./data/Pro1-SegmentationData/Domain2/data/*.bmp", \
+                test_label_str = "./data/Pro1-SegmentationData/Domain2/label/{}.bmp"):
 
     inputs, targets, names = [], [], []
     val_inputs, val_targets, val_names = [], [], []
@@ -188,7 +202,7 @@ def load_name(train_data_str = "./data/Pro1-SegmentationData/Training_data/data/
     )
 
 
-def load_dataset(train=True):
+def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = True,is_color_jitter = True):
     (
         inputs,
         targets,
@@ -216,24 +230,40 @@ def load_dataset(train=True):
         val_targets,
         train_names_set,
         val_names,
-    )
+    )    
+        # transform input images and construct datasets
 
-    # transform input images and construct datasets
+    # Transformation setting
+    input_transform_list = []
+    label_transform_list = []
+    if is_rotate:
+        input_transform_list.append(transforms.RandomRotation(180,resample=False,expand=False))
+        label_transform_list.append(transforms.RandomRotation(180,resample=False,expand=False))
+    elif is_translate:
+        # 0.1,0.1 is the factor
+        input_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=0))
+        label_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=255))
+    elif is_vert_flip:
+        input_transform_list.append(transforms.RandomVerticalFlip())
+        label_transform_list.append(transforms.RandomVerticalFlip())
+    elif is_color_jitter:
+        input_transform_list.append(transforms.ColorJitter(brightness=0.5,contrast=0.5,hue = 0.5))
+    input_transform_list.append(transforms.Resize([256,256]))
+    label_transform_list.append(transforms.Resize([256,256]))
+
+    label_transform_list.append(transforms.Grayscale(1))
+
+    input_transform_list.append(transforms.ToTensor())
+    label_transform_list.append(transforms.ToTensor())
+
+    input_transform_list.append(normalize)
+
+
     transform = transforms.Compose(
-        [
-            # Try some transformation
-            transforms.Resize([256,256]),
-            transforms.ToTensor(),
-            normalize,
-        ]
+        input_transform_list
     )
     label_transform = transforms.Compose(
-        [
-            # Try some transformation
-            transforms.Resize([256,256]),
-            transforms.Grayscale(1),
-            transforms.ToTensor(),
-        ]
+        label_transform_list
     )
     test_transform = transforms.Compose(
         [
@@ -280,7 +310,7 @@ def load_dataset(train=True):
     else:
         return test_dataset
 
-def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_generalized=1,domain = 'random'):
+def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_generalized=1,domain = 'random'):
     # Requiring unnormalized input image shape as (C,H,W)
     # domain: 'domain1', 'domain2','domain3','random'
     # Return C*H*W images and log normalized fftshit frequency.
@@ -323,7 +353,7 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_gene
 
     H_value = original_image.shape[1]
     W_value = original_image.shape[2]
-    normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+
     temp_transform = transforms.Compose(
     [
         transforms.Resize([H_value,W_value]),
@@ -342,7 +372,7 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_gene
     dg_fre_outputs = []
 
     #Image denormalized
-    original_image = original_image / 2 + 0.5 
+    
 
     for i in range(num_generalized):
         # print(type(str(inputs[indexs[i]])))
@@ -359,10 +389,13 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 0,num_gene
         amplitude_original_image= np.abs(np.fft.fftshift(np.fft.fft2(original_image,axes=(-2, -1)),axes=(-2, -1)))
         phase_original_image = np.angle(np.fft.fftshift(np.fft.fft2(original_image,axes=(-2, -1)),axes=(-2, -1)))
 
+        power_generelized = np.linalg.norm(amplitude_generalized_image[:,H_left:H_right,W_left:W_right])
+        power_original = np.linalg.norm(amplitude_original_image[:,H_left:H_right,W_left:W_right])
+
         # Replace the amplitude
         amplitude_original_image[:,H_left:H_right,W_left:W_right] \
             = (1-ratio)* amplitude_original_image[:,H_left:H_right,W_left:W_right] \
-            + ratio* amplitude_generalized_image[:,H_left:H_right,W_left:W_right] 
+            + ratio* amplitude_generalized_image[:,H_left:H_right,W_left:W_right] * power_original/power_generelized
         
         # Output generalized image
         generalized_freq = amplitude_original_image * np.exp(1j*phase_original_image)
