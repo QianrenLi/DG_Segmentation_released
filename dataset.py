@@ -76,8 +76,10 @@ class MNIST(Dataset):
         if is_DG:
             # Change into numpy
             temp_image = np.asarray(temp_image)
-            temp_image = domain_generization(temp_image,**params)
-
+            temp_image = temp_image.transpose(2,0,1)
+            temp_image, _ = domain_generization(temp_image,**params)
+            temp_image = np.asarray(temp_image[0]).transpose(1,2,0)
+            temp_image = np.uint8(temp_image) 
             # Change into PIL
             temp_image = Image.fromarray(temp_image)
 
