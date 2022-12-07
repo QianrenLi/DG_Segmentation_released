@@ -7,7 +7,10 @@ import random
 from dataset import load_dataset
 from torchvision import transforms
 
-test_set = load_dataset(train=False)
+
+
+
+
 
 # b = trainset.__getitem__(1)
 
@@ -38,18 +41,46 @@ test_set = load_dataset(train=False)
 #         print(name)
 
 
-
+test_set,validset = load_dataset(train=True,is_DG = True)
 def img_show(img):
     img = img / 2 + 0.5     # unnormalize
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
 
+images, labels = test_set.__getitem__(0)
+plt.subplot(1,2,1)
+img = images / 2 + 0.5     # unnormalize
+npimg = img.numpy()
+plt.imshow(np.transpose(npimg,(1,2,0)))
+plt.subplot(1,2,2)
+plt.imshow(labels,cmap='gray')
+plt.show()
 test = 1
-dataiter = iter(test_set)
-images, targets,path = next(dataiter)
-# print(images)
+# dataiter = iter(test_set)
+
+# import torch
+# import torchvision
+# trainloader = torch.utils.data.DataLoader(test_set, batch_size=4,
+#                                           shuffle=True, num_workers=2)
+
+# images, targets = test_set.__getitem__(0)
+
+# dataiter = iter(trainloader)
+# images, targets = next(dataiter)
 # img_show(images)
+
+# for i, (inputs, target) in enumerate(trainloader):
+#     img_show(torchvision.utils.make_grid(inputs))
+
+    # pass
+# for i in range(5):
+#     images, targets = next(dataiter)
+# # print(images)
+#     img_show(images)
+#     # img_show(targets)
+#     plt.imshow(targets,cmap='gray')
+#     plt.show()
 
 # img_show(targets,True)
 # test_label_transform = transforms.Compose(
@@ -59,56 +90,92 @@ images, targets,path = next(dataiter)
 #     ]
 # )
 # print(type(test_label_transform))
-from PIL import Image
+# from PIL import Image
 
-im = Image.open('./data/Pro1-SegmentationData/Domain3/data/V0001.bmp')
-im_l = Image.open('./data/Pro1-SegmentationData/Domain3/label/V0001.bmp')
-# plt.imshow((im))
-# plt.show()
-p1 = random.randint(0,1)
-p2 = random.randint(0,1)
-im_aug = transforms.Compose([
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(),
-    # transforms.RandomRotation(180,resample=False,expand=False),
-    transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=0),
-    transforms.ColorJitter(brightness=0.5,contrast=0.5,hue = 0.5),
-    # transforms.RandomCrop(256),
-    transforms.Resize((512,512))
-])
+# im = Image.open('./data/Pro1-SegmentationData/Domain3/data/V0001.bmp')
+# im_l = Image.open('./data/Pro1-SegmentationData/Domain3/label/V0001.bmp')
+# # plt.imshow((im))
+# # plt.show()
+# p1 = random.randint(0,1)
+# p2 = random.randint(0,1)
+# im_aug = transforms.Compose([
+#     transforms.ToTensor(),
+#     transforms.RandomHorizontalFlip(),
+#     transforms.RandomVerticalFlip(),
+#     # transforms.RandomRotation(180,resample=False,expand=False),
+#     transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=0),
+#     transforms.ColorJitter(brightness=0.5,contrast=0.5,hue = 0.5),
+#     # transforms.RandomCrop(256),
+#     transforms.Resize((512,512))
+# ])
 
-im_aug_2 = transforms.Compose([
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(),
-    # transforms.RandomRotation(180,resample=False,expand=False),
-    transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=255),
-    # transforms.RandomAffine(degrees = 50),
-    # transforms.RandomCrop(256),
-    transforms.Resize((512,512)),
-    transforms.Grayscale(1)
-])
+# im_aug_2 = transforms.Compose([
+#     transforms.ToTensor(),
+#     transforms.RandomHorizontalFlip(),
+#     transforms.RandomVerticalFlip(),
+#     # transforms.RandomRotation(180,resample=False,expand=False),
+#     transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=255),
+#     # transforms.RandomAffine(degrees = 50),
+#     # transforms.RandomCrop(256),
+#     transforms.Resize((512,512)),
+#     transforms.Grayscale(1)
+# ])
 
 # seed = np.random.randint(5000000)
 # Observation: after set the same seed value to torch, the image transformed remain the same
 # Observation2: the randomness applied to same layer
 seed = 50
-import torch
-# for i in range(2):
-#     torch.manual_seed(seed)
-#     f = plt.imshow(im_aug(im))
-#     plt.show()
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-# random.seed(seed)
-# f = plt.imshow(im_aug(im))
+
+# temp_image = np.asarray(im,dtype = np.float64)/255
+# # plt.imshow(temp_image)
+# # plt.show()
+# # img_show(temp_image)
+# # print(temp_image.shape)
+# # print(temp_image.shape)
+# from dataset import domain_generization
+# temp_images, _ = domain_generization(np.transpose(temp_image,(2,1,0)))
+# print(type(temp_images))
+# temp_image = temp_images[0]
+# print(temp_image.shape)
+# plt.imshow(np.transpose(temp_image, (1, 2, 0)))
+# plt.show()
+# print(np.max(temp_image))
+# print(np.min(temp_image))
+# # print(temp_image.shape)
+# import torch
+# from PIL import Image
+# print(temp_image)
+
+
+
+# temp_image = Image.fromarray(np.uint8(np.clip(np.transpose(temp_image, (1, 2, 0)),0,1) * 255)).convert('RGB')
+# temp_image.show()
+# # temp_image = torch.from_numpy(temp_image)
+# # temp_image = PIL2Tensor(np.transpose(temp_image, (1, 2, 0)))
+# print(type(temp_image))
+
+
+# import torch
+# plt.imshow(np.transpose(temp_image, (1, 2, 0)))
 # plt.show()
 
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-# random.seed(seed)
-# print(im_l.)
-f2 = plt.imshow(im_aug_2(im_l))
-plt.show()
+# import torch
+# # for i in range(2):
+# #     torch.manual_seed(seed)
+# #     f = plt.imshow(im_aug(im))
+# #     plt.show()
+# torch.manual_seed(seed)
+# torch.cuda.manual_seed(seed)
+# # random.seed(seed)
+# img_show(im_aug(im))
+# # plt.show()
+
+# torch.manual_seed(seed)
+# torch.cuda.manual_seed(seed)
+# # random.seed(seed)
+# # print(im_l.)
+# img_show(im_aug_2(im_l))
+
 
 
 # for i in range(5):
@@ -134,3 +201,5 @@ plt.show()
 # plt.imshow(np.transpose(np.real(dg_outputs[0]), (1, 2, 0)))
 # plt.show()
 # print(np.sum(np.abs(dg_outputs - original_image)))
+
+

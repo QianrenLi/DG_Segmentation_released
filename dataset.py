@@ -7,7 +7,8 @@ import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
 from tqdm import tqdm
-from PIL import Image
+from PIL import Image, ImageOps
+import random
 
 cv2.setNumThreads(1)
 
@@ -42,7 +43,7 @@ def random_crop(img, gt, roi, size=[0.2, 0.8]):
 
 
 class MNIST(Dataset):
-    def __init__(self, x, y, names, im_transform, label_transform, train=False):
+    def __init__(self, x, y, names, im_transform, label_transform, train=False,is_DG = False):
         self.im_transform = im_transform
         self.label_transform = label_transform
         assert len(x) == len(y)
@@ -52,6 +53,7 @@ class MNIST(Dataset):
         self.y = y
         self.names = names
         self.train = train
+        self.is_DG = is_DG
 
     def __len__(self):
         return self.dataset_size
@@ -59,32 +61,75 @@ class MNIST(Dataset):
     def _get_index(self, idx):
         return idx
 
-    def __getitem__(self, idx,is_DG = True,**params):
+    # def transform(self,image,label):
+    #     seed = np.random.randint(5000000)
+    #     torch.manual_seed(seed)
+    #     torch.cuda.manual_seed(seed)
+    #     image.show()
+    #     label.show()
+    #     # transform image to tensor
+    #     temp_tesorner = transforms.Compose(
+    #         [
+    #             transforms.ToTensor(),
+    #             transforms.Resize([256,256])
+    #         ]
+    #     )
+    #     temp_image = temp_tesorner(image)
+    #     label_image = temp_tesorner(label)
+    #     both_images = torch.cat((temp_image.unsqueeze(0), label_image.unsqueeze(0)),0)
+    #     transforms_images = self.label_transform(both_images)
+    #     temp_image = transforms_images[0]
+    #     label_image = transforms_images[1]
+
+    #     label_transform_2 = transforms.Compose(
+    #         [   
+    #             transforms.Resize([256,256]),
+    #             transforms.Grayscale(1)
+    #         ]
+    #     )
+       
+    #     temp_image = self.im_transform(temp_image)
+    #     label_image = label_transform_2(label_image)
+
+    #     # Reverse channel color
+    #     label_image = 1 - label_image
+    #     # Todo additional grey scale
+        
+
+    #     return temp_image, label_image
+
+    def __getitem__(self, idx):
         # is_DG: A bool_value to determine whether the DG is applied
         if torch.is_tensor(idx):
             idx = idx.tolist()
         idx = self._get_index(idx)
         # To enable the same transformation, manual seed is applied
+        
         seed = np.random.randint(5000000)
-
         # idx is int number
         # self.x is the training set file name vector, self.y is the label set file name vector
         # e.g [v001.bmp,v002.bmp,...,]
         temp_image = Image.open(self.x[idx],mode='r')
-
         # Do domain generization
-        if is_DG:
+        if self.is_DG:
             # Change into numpy
-            temp_image = np.asarray(temp_image)
-            temp_image = domain_generization(temp_image,**params)
+            temp_image_t = np.asarray(temp_image,dtype = np.float64)/255
 
-            # Change into PIL
-            temp_image = Image.fromarray(temp_image)
-
+            # Resize the DG image
+            temp_image_t = cv2.resize(temp_image_t,(256, 256))
+            temp_image_t = np.transpose(temp_image_t, (2,0,1))
+            temp_images,_ = domain_generization(temp_image_t)
+            temp_image_t = np.real(temp_images[0])
+            
+            # Change into PIL (H W C)
+            temp_image = Image.fromarray(np.uint8(np.clip(np.transpose(temp_image_t, (1, 2, 0)),0,1) * 255))
+            # temp_image.show()
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        temp_image = self.im_transform(temp_image)
         # print(type(temp_image))
         # print(temp_image.dtype)
-        torch.manual_seed(seed)
-        temp_image = self.im_transform(temp_image)
+        # seed = np.random.randint(5000000)
 
         # print(type(temp_image))
         # Image size normalized -- image size is different 1634, 1634
@@ -97,9 +142,15 @@ class MNIST(Dataset):
         # Return the label image:
         # print(self.y)
         label_image = Image.open(self.y[idx])
+        
         torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
         label_image = self.label_transform(label_image)
+        # if self.is_DG:
+        #     label_image = np.asarray(label_image)
+        #     label_image = Image.fromarray(label_image)
         label_image = label_image.squeeze(dim = 0)
+
         # print(label_image.shape)
         # print(label_image)
         # label_image = np.array((cv2.resize(label_image,(N, N))/255),dtype="uint8")
@@ -202,7 +253,7 @@ def load_name(train_data_str = "./data/Pro1-SegmentationData/Training_data/data/
     )
 
 
-def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = True,is_color_jitter = True):
+def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = True,is_color_jitter = True,is_DG = False):
     (
         inputs,
         targets,
@@ -236,27 +287,30 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     # Transformation setting
     input_transform_list = []
     label_transform_list = []
+
+    input_transform_list.append(transforms.ToTensor())
+    label_transform_list.append(transforms.ToTensor())
+    input_transform_list.append(transforms.Resize([256,256]))
+    label_transform_list.append(transforms.Resize([256,256]))
     if is_rotate:
-        input_transform_list.append(transforms.RandomRotation(180,resample=False,expand=False))
-        label_transform_list.append(transforms.RandomRotation(180,resample=False,expand=False))
+        input_transform_list.append(transforms.RandomRotation(180,expand=False,fill=0))
+        label_transform_list.append(transforms.RandomRotation(180,expand=False,fill=1))
     elif is_translate:
         # 0.1,0.1 is the factor
         input_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=0))
-        label_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=255))
+        label_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=1))
     elif is_vert_flip:
         input_transform_list.append(transforms.RandomVerticalFlip())
         label_transform_list.append(transforms.RandomVerticalFlip())
     elif is_color_jitter:
         input_transform_list.append(transforms.ColorJitter(brightness=0.5,contrast=0.5,hue = 0.5))
+
     input_transform_list.append(transforms.Resize([256,256]))
     label_transform_list.append(transforms.Resize([256,256]))
 
     label_transform_list.append(transforms.Grayscale(1))
-
-    input_transform_list.append(transforms.ToTensor())
-    label_transform_list.append(transforms.ToTensor())
-
     input_transform_list.append(normalize)
+
 
 
     transform = transforms.Compose(
@@ -287,6 +341,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
         im_transform=transform,
         label_transform=label_transform,
         train=True,
+        is_DG = is_DG,
     )
     val_dataset = MNIST(
         X_val,
@@ -295,6 +350,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
         im_transform=test_transform,
         label_transform=test_label_transform,
         train=False,
+        is_DG = False,
     )
     test_dataset = MNIST(
         X_test,
@@ -303,6 +359,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
         im_transform=test_transform,
         label_transform=test_label_transform,
         train=False,
+        is_DG = False,
     )
 
     if train:
@@ -310,7 +367,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     else:
         return test_dataset
 
-def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_generalized=1,domain = 'random'):
+def domain_generization(original_image, scaling_factor = 0.1, ratio = 0, num_generalized=1,domain = 'random'):
     # Requiring unnormalized input image shape as (C,H,W)
     # domain: 'domain1', 'domain2','domain3','random'
     # Return C*H*W images and log normalized fftshit frequency.
@@ -354,33 +411,28 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_gen
     H_value = original_image.shape[1]
     W_value = original_image.shape[2]
 
-    temp_transform = transforms.Compose(
-    [
-        transforms.Resize([H_value,W_value]),
-        transforms.ToTensor(),
-    ]
-    )
 
     H_left = np.ceil(H_value/2 - H_value * scaling_factor/2).astype(int)
     H_right = np.ceil(H_value/2 + H_value * scaling_factor/2).astype(int)
     W_left = np.ceil(W_value/2 - W_value * scaling_factor/2).astype(int)
     W_right = np.ceil(W_value/2 + W_value * scaling_factor/2).astype(int)
 
-    import random
     indexs = random.sample(range(length_inputs),num_generalized)
-    dg_outputs = []
-    dg_fre_outputs = []
+    dg_outputs = np.zeros((num_generalized,3,H_value,W_value))
+    dg_fre_outputs =np.zeros((num_generalized,3,H_value,W_value),dtype= complex)
 
     #Image denormalized
     
 
     for i in range(num_generalized):
         # print(type(str(inputs[indexs[i]])))
-        generalized_image = Image.open((inputs[indexs[i]]),mode='r')
-
-        generalized_image = np.asarray(temp_transform(generalized_image))
-
-
+        generalized_image = cv2.imread((inputs[indexs[i]]))
+        generalized_image = cv2.cvtColor(generalized_image,cv2.COLOR_BGR2RGB)
+        
+        generalized_image = np.array(cv2.resize(generalized_image,(H_value, W_value)),dtype="uint8")
+        generalized_image = generalized_image.transpose(2,0,1)
+        generalized_image = np.asarray(generalized_image, np.float64) / 255
+        # print(np.max(generalized_image))
         # generalized_image = np.array(cv2.resize(generalized_image,(H_value, W_value)),dtype="uint8")
         # generalized_image = generalized_image.transpose(2,0,1)
         
@@ -396,13 +448,16 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_gen
         amplitude_original_image[:,H_left:H_right,W_left:W_right] \
             = (1-ratio)* amplitude_original_image[:,H_left:H_right,W_left:W_right] \
             + ratio* amplitude_generalized_image[:,H_left:H_right,W_left:W_right] * power_original/power_generelized
-        
+        # amplitude_original_image[:,H_left:H_right,W_left:W_right] = amplitude_original_image[:,H_left:H_right,W_left:W_right] - amplitude_original_image[:,H_left:H_right,W_left:W_right]
         # Output generalized image
         generalized_freq = amplitude_original_image * np.exp(1j*phase_original_image)
         generalized_image = np.real(np.fft.ifft2(np.fft.fftshift(generalized_freq,axes=(2,1)),axes=(-2, -1)))
+
         # print(generalized_image.shape)
         # print(type(generalized_image))
-        dg_outputs.append(generalized_image)
-        dg_fre_outputs.append(generalized_freq)
+        dg_outputs[i] = generalized_image
+        # print(generalized_freq.shape)
+        dg_fre_outputs[i] = generalized_freq
     
+
     return dg_outputs,dg_fre_outputs
