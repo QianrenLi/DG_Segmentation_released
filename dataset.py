@@ -295,14 +295,14 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     if is_rotate:
         input_transform_list.append(transforms.RandomRotation(180,expand=False,fill=0))
         label_transform_list.append(transforms.RandomRotation(180,expand=False,fill=1))
-    elif is_translate:
+    if is_translate:
         # 0.1,0.1 is the factor
-        input_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=0))
-        label_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fillcolor=1))
-    elif is_vert_flip:
+        input_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fill=0))
+        label_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fill=1))
+    if is_vert_flip:
         input_transform_list.append(transforms.RandomVerticalFlip())
         label_transform_list.append(transforms.RandomVerticalFlip())
-    elif is_color_jitter:
+    if is_color_jitter:
         input_transform_list.append(transforms.ColorJitter(brightness=0.5,contrast=0.5,hue = 0.5))
 
     input_transform_list.append(transforms.Resize([256,256]))
@@ -367,7 +367,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     else:
         return test_dataset
 
-def domain_generization(original_image, scaling_factor = 0.1, ratio = 0, num_generalized=1,domain = 'random'):
+def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_generalized=1,domain = 'random'):
     # Requiring unnormalized input image shape as (C,H,W)
     # domain: 'domain1', 'domain2','domain3','random'
     # Return C*H*W images and log normalized fftshit frequency.
