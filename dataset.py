@@ -116,7 +116,7 @@ class MNIST(Dataset):
             temp_image_t = np.asarray(temp_image,dtype = np.float64)/255
 
             # Resize the DG image
-            temp_image_t = cv2.resize(temp_image_t,(256, 256))
+            temp_image_t = cv2.resize(temp_image_t,(32 * 40, 32 * 40))
             temp_image_t = np.transpose(temp_image_t, (2,0,1))
             temp_images,_ = domain_generization(temp_image_t)
             temp_image_t = np.real(temp_images[0])
@@ -150,7 +150,10 @@ class MNIST(Dataset):
         #     label_image = np.asarray(label_image)
         #     label_image = Image.fromarray(label_image)
         label_image = label_image.squeeze(dim = 0)
-
+        
+        label_image =  torch.cat((1-label_image.unsqueeze(0), (label_image).unsqueeze(0)),0)
+        
+        # label_image = 1 - label_image 
         # print(label_image.shape)
         # print(label_image)
         # label_image = np.array((cv2.resize(label_image,(N, N))/255),dtype="uint8")
@@ -290,8 +293,8 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
 
     input_transform_list.append(transforms.ToTensor())
     label_transform_list.append(transforms.ToTensor())
-    input_transform_list.append(transforms.Resize([256,256]))
-    label_transform_list.append(transforms.Resize([256,256]))
+    input_transform_list.append(transforms.Resize([32 * 10,32 * 10]))
+    label_transform_list.append(transforms.Resize([32 * 10, 32 * 10]))
     if is_rotate:
         input_transform_list.append(transforms.RandomRotation(180,expand=False,fill=0))
         label_transform_list.append(transforms.RandomRotation(180,expand=False,fill=1))
@@ -305,8 +308,8 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     if is_color_jitter:
         input_transform_list.append(transforms.ColorJitter(brightness=0.5,contrast=0.5,hue = 0.5))
 
-    input_transform_list.append(transforms.Resize([256,256]))
-    label_transform_list.append(transforms.Resize([256,256]))
+    input_transform_list.append(transforms.Resize([32 * 10, 32 * 10]))
+    label_transform_list.append(transforms.Resize([32 * 10, 32 * 10]))
 
     label_transform_list.append(transforms.Grayscale(1))
     input_transform_list.append(normalize)
