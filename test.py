@@ -40,23 +40,46 @@ from torchvision import transforms
 #     if os.path.exists(inputpath):
 #         print(name)
 
+#################Start Test DG###################
+# test_set,validset = load_dataset(train=True,is_DG = True)
+# def img_show(img):
+#     img = img / 2 + 0.5     # unnormalize
+#     npimg = img.numpy()
+#     plt.imshow(np.transpose(npimg, (1, 2, 0)))
+#     plt.show()
 
-test_set,validset = load_dataset(train=True,is_DG = True)
-def img_show(img):
-    img = img / 2 + 0.5     # unnormalize
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show()
+# images, labels = test_set.__getitem__(0)
+# plt.subplot(1,2,1)
+# img = images / 2 + 0.5     # unnormalize
+# npimg = img.numpy()
+# plt.imshow(np.transpose(npimg,(1,2,0)))
+# plt.subplot(1,2,2)
+# plt.imshow(labels,cmap='gray')
+# plt.show()
+# test = 1
+#################End Test DG#####################
 
-images, labels = test_set.__getitem__(0)
-plt.subplot(1,2,1)
-img = images / 2 + 0.5     # unnormalize
-npimg = img.numpy()
-plt.imshow(np.transpose(npimg,(1,2,0)))
-plt.subplot(1,2,2)
-plt.imshow(labels,cmap='gray')
-plt.show()
-test = 1
+# #################Start Test iter#################
+# import torch
+# import torchvision
+# test_set,validset = load_dataset(train=True,is_DG = True)
+# trainloader = torch.utils.data.DataLoader(test_set, batch_size=4,
+#                                           shuffle=True, num_workers=2)
+# def img_show(img):
+#     img = img / 2 + 0.5     # unnormalize
+#     npimg = img.numpy()
+#     plt.imshow(np.transpose(npimg, (1, 2, 0)))
+#     plt.show()
+# dataiter = iter(trainloader)
+# images, targets = next(dataiter)
+
+# plt.subplot(1,2,1)
+# img = images / 2 + 0.5     # unnormalize
+# npimg = img.numpy()
+# img_show(torchvision.utils.make_grid(images))
+# #################ENd Test iter###################
+
+
 # dataiter = iter(test_set)
 
 # import torch
@@ -203,3 +226,43 @@ seed = 50
 # print(np.sum(np.abs(dg_outputs - original_image)))
 
 
+# ######################Test Dice Loss####################
+# import torch
+# import torch.nn as nn
+
+# class BinaryDiceLoss(nn.Module):
+#     def __init__(self) -> None:
+#         super(BinaryDiceLoss, self).__init__()
+#     def forward(self,inputs, targets):
+#         # Inputs and targets should both be a long type 
+#         # Batch numbers
+#         N = targets.size()[0]
+#         # Smooth parameters
+#         smooth = 1
+#         inputs_flat = inputs.view(N,-1)
+#         print(inputs_flat.size())
+#         targets_flat = targets.view(N,-1)
+
+#         intersection = inputs_flat * targets_flat
+        
+#         dice_eff = (2 * intersection.sum(1) + smooth) / (inputs_flat.sum(1) + targets_flat.sum(1) + smooth)
+#         print(intersection.size())
+#         loss = 1 - dice_eff.sum()/N
+#         return loss 
+
+
+# criterion = BinaryDiceLoss()
+
+# a = torch.ones(2,3,16,16)
+# b = torch.zeros(2,3,16,16)
+
+# loss = criterion(a,b)
+# print(loss)
+
+
+
+# ######################End Test Dice Loss################
+
+from dataset import load_dataset
+
+a,b = load_dataset()

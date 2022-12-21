@@ -200,22 +200,36 @@ def load_name(train_data_str = "./data/Pro1-SegmentationData/Training_data/data/
     targets = np.array(targets)
     names = np.array(names)
 
-    val_input_pattern = glob.glob(
-        valid_data_str
-    )
-    val_targetlist = valid_label_str
+    # val_input_pattern = glob.glob(
+    #     valid_data_str
+    # )
+    # val_targetlist = valid_label_str
 
-    val_input_pattern.sort()
+    # val_input_pattern.sort()
 
-    for j in tqdm(range(len(val_input_pattern))):
-        val_inputpath = val_input_pattern[j]
-        val_name = analyze_name(val_inputpath)
-        val_targetpath = val_targetlist.format(str(val_name))
+    # for j in tqdm(range(len(val_input_pattern))):
+    #     val_inputpath = val_input_pattern[j]
+    #     val_name = analyze_name(val_inputpath)
+    #     val_targetpath = val_targetlist.format(str(val_name))
 
-        if os.path.exists(val_inputpath):
-            val_inputs.append(val_inputpath)
-            val_targets.append(val_targetpath)
-            val_names.append(val_name)
+    #     if os.path.exists(val_inputpath):
+    #         val_inputs.append(val_inputpath)
+    #         val_targets.append(val_targetpath)
+    #         val_names.append(val_name)
+    
+    data_size = len(inputs)
+    div_factor = 5
+    segments_length = int(data_size/div_factor)
+    slice_pos = np.random.randint(div_factor)
+    val_inputs = inputs[slice_pos * segments_length: (slice_pos +1) *segments_length ]
+    val_targets = targets[slice_pos * segments_length: (slice_pos +1) *segments_length ]
+    val_names = names[slice_pos * segments_length: (slice_pos +1) *segments_length ]
+
+  
+    inputs = np.concatenate((inputs[0:slice_pos * segments_length],inputs[(slice_pos +1) *segments_length :]),axis= 0) 
+    targets = np.concatenate((targets[0:slice_pos * segments_length],targets[(slice_pos +1) *segments_length :]),axis= 0) 
+    names = np.concatenate((names[0:slice_pos * segments_length],names[(slice_pos +1) *segments_length :]),axis= 0) 
+
 
     test_input_pattern = glob.glob(
         test_data_str
@@ -256,7 +270,13 @@ def load_name(train_data_str = "./data/Pro1-SegmentationData/Training_data/data/
     )
 
 
-def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = True,is_color_jitter = True,is_DG = False):
+def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = True,is_color_jitter = True,is_DG = False, \
+                train_data_str = "./data/Pro1-SegmentationData/Training_data/data/*.bmp", \
+                train_label_str = "./data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
+                valid_data_str = "./data/Pro1-SegmentationData/Training_data/data/*.bmp", \
+                valid_label_str = "./data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
+                test_data_str = "./data/Pro1-SegmentationData/Domain2/data/*.bmp", \
+                test_label_str = "./data/Pro1-SegmentationData/Domain2/label/{}.bmp"):
     (
         inputs,
         targets,
@@ -267,7 +287,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
         test_inputs,
         test_targets,
         test_names,
-    ) = load_name()
+    ) = load_name(train_data_str,train_label_str,valid_data_str,valid_label_str,test_data_str,test_label_str)
 
     # print("Length of new inputs:", len(inputs))
     # mean & variance
