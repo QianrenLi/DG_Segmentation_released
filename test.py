@@ -274,13 +274,13 @@ seed = 50
 # print(d)
 # #################### MSE ###################
 
-#################### PSNR ###################
-import dis_rep
+# #################### PSNR ###################
+# import dis_rep
 
-a = np.random.rand(3,50,50)
-b = np.random.rand(3,50,50)
-(c,d) = dis_rep.SSIM_metric(a,b)
-print(c)
-print(d)
-#################### PSNR ###################
+# a = np.random.rand(3,50,50)
+# b = np.random.rand(3,50,50)
+# (c,d) = dis_rep.SSIM_metric(a,b)
+# print(c)
+# print(d)
+# #################### PSNR ###################
 #################### Metric Test #########################

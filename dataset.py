@@ -43,7 +43,7 @@ def random_crop(img, gt, roi, size=[0.2, 0.8]):
 
 
 class MNIST(Dataset):
-    def __init__(self, x, y, names, im_transform, label_transform, train=False,is_DG = False):
+    def __init__(self, x, y, names, im_transform, label_transform, train=False,is_DG = 0):
         self.im_transform = im_transform
         self.label_transform = label_transform
         assert len(x) == len(y)
@@ -61,43 +61,6 @@ class MNIST(Dataset):
     def _get_index(self, idx):
         return idx
 
-    # def transform(self,image,label):
-    #     seed = np.random.randint(5000000)
-    #     torch.manual_seed(seed)
-    #     torch.cuda.manual_seed(seed)
-    #     image.show()
-    #     label.show()
-    #     # transform image to tensor
-    #     temp_tesorner = transforms.Compose(
-    #         [
-    #             transforms.ToTensor(),
-    #             transforms.Resize([256,256])
-    #         ]
-    #     )
-    #     temp_image = temp_tesorner(image)
-    #     label_image = temp_tesorner(label)
-    #     both_images = torch.cat((temp_image.unsqueeze(0), label_image.unsqueeze(0)),0)
-    #     transforms_images = self.label_transform(both_images)
-    #     temp_image = transforms_images[0]
-    #     label_image = transforms_images[1]
-
-    #     label_transform_2 = transforms.Compose(
-    #         [   
-    #             transforms.Resize([256,256]),
-    #             transforms.Grayscale(1)
-    #         ]
-    #     )
-       
-    #     temp_image = self.im_transform(temp_image)
-    #     label_image = label_transform_2(label_image)
-
-    #     # Reverse channel color
-    #     label_image = 1 - label_image
-    #     # Todo additional grey scale
-        
-
-    #     return temp_image, label_image
-
     def __getitem__(self, idx):
         # is_DG: A bool_value to determine whether the DG is applied
         if torch.is_tensor(idx):
@@ -111,14 +74,14 @@ class MNIST(Dataset):
         # e.g [v001.bmp,v002.bmp,...,]
         temp_image = Image.open(self.x[idx],mode='r')
         # Do domain generization
-        if self.is_DG:
+        if self.is_DG != 0:
             # Change into numpy
             temp_image_t = np.asarray(temp_image,dtype = np.float64)/255
 
             # Resize the DG image
             temp_image_t = cv2.resize(temp_image_t,(32 * 40, 32 * 40))
             temp_image_t = np.transpose(temp_image_t, (2,0,1))
-            temp_images,_ = domain_generization(temp_image_t)
+            temp_images,_ = domain_generization(temp_image_t,domain=self.is_DG)
             temp_image_t = np.real(temp_images[0])
             
             # Change into PIL (H W C)
@@ -390,10 +353,12 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     else:
         return test_dataset
 
-def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_generalized=1,domain = 'random'):
+def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_generalized=1,domain = 4):
     # Requiring unnormalized input image shape as (C,H,W)
-    # domain: 'domain1', 'domain2','domain3','random'
+    # domain: 'domain1' = 1, 'domain2' = 2,'domain3' = 3,'random' = 4
     # Return C*H*W images and log normalized fftshit frequency.
+
+
     domain_pattern_1 = glob.glob(
         "./data/Pro1-SegmentationData/Domain1/data/*.jpg"
     )
@@ -410,19 +375,19 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_gen
     inputs = []
     # Here the domain set contain all the data
 
-    if domain == 'random' or domain == 'domain1':
+    if domain == 4 or domain == 1:
         for i in range(len(domain_pattern_1)):
             inputpath = domain_pattern_1[i]
             if os.path.exists(inputpath):
                 inputs.append(inputpath)
 
-    if domain == 'random' or domain == 'domain2':
+    if domain == 4 or domain == 2:
         for i in range(len(domain_pattern_2)):
             inputpath = domain_pattern_2[i]
             if os.path.exists(inputpath):
                 inputs.append(inputpath)
 
-    if domain == 'random' or domain == 'domain3':
+    if domain == 4 or domain == 3:
         for i in range(len(domain_pattern_3)):
             inputpath = domain_pattern_3[i]
             if os.path.exists(inputpath):
