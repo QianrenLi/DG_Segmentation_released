@@ -1,7 +1,7 @@
 import numpy as np
 
 def norm_dist(image_1,image_2,ord):
-    # Input one image and calculate its absolute ord-norm distance
+    # Input two images and calculate its absolute ord-norm distance
     # Here each channel distance will be calculated first, and then do annother norm calculation
     channel_norm = np.zeros((3,1))
     channel_norm[0] = np.linalg.norm(image_1[0,:,:] - image_2[0,:,:],ord = ord)
@@ -12,6 +12,78 @@ def norm_dist(image_1,image_2,ord):
 def CS_dist(image_1,image_2):
     return 0.5 * np.sum(np.divide(np.power(image_1-image_2,2),image_1+image_2))
 
+def MSE_metric(image_1,image_2):
+    """
+    @description  : Used to Generate MSE, not directional
+    ---------
+    @param  :   image_1(3D np array), image_2(3D np array)
+    -------
+    @Returns  : (MSE_value -> float, channel MSE -> np array)
+    -------
+    Input is (C H W) metric in range (0~1)
+    MSE value is the MSE for all the channel
+    The channel MSE is the MSE value of each channel
+    The MSE value range: (0~255)
+    """
+
+
+    if np.shape(image_1) != np.shape(image_2):
+        print("The shape of two images must be the same")
+        return
+    (k,m,n) = np.shape(image_1)
+    timage_1 = image_1 * 255
+    timage_2 = image_2 * 255
+    channel_MSE = np.zeros((3,1))
+    channel_MSE[0] = np.linalg.norm(timage_1[0,:,:] - timage_2[0,:,:],ord = 2)
+    channel_MSE[1] = np.linalg.norm(timage_1[1,:,:] - timage_2[1,:,:],ord = 2)
+    channel_MSE[2] = np.linalg.norm(timage_1[2,:,:] - timage_2[2,:,:],ord = 2)
+
+    channel_MSE = np.true_divide(np.power(channel_MSE,2),m*n)
+    MSE_value = (channel_MSE[0] + channel_MSE[1] + channel_MSE[2])/3
+    return (MSE_value, channel_MSE)
+    
+
+def PSNR_metric(image_1,image_2):
+    """
+    @description  : Used to Generate PSNR, not directional
+    ---------
+    @param  :   image_1(3D np array), image_2(3D np array)
+    -------
+    @Returns  : (PSNR_value -> float, channel PSNR -> np array)
+    -------
+    Range of input image should be (0~1)
+    The output PSNR in dB value
+    """
+    if np.shape(image_1) != np.shape(image_2):
+        print("The shape of two images must be the same")
+        return
+    (MSE_value, channel_MSE) = MSE_metric(image_1,image_2)
+    return (10*np.log10(255/MSE_value),10*np.log10(255/channel_MSE))
+
+def SSIM_metric(image_1,image_2):
+    """
+    @description  : Used to Generate SSIM, not directional
+    ---------
+    @param  : image_1(3D np array), image_2(3D np array)
+    -------
+    @Returns  : (SSIM value -> float,  channel SSIM -> np array)
+    -------
+    The input should be (C,H,W) and in RGB format
+    Image size must be greater than 7 * 7
+    """
+    
+    
+    from skimage.metrics import structural_similarity as ssim
+    
+    timage_1 = image_1[0,:,:] * 0.3 + image_1[1,:,:] * 0.59 + image_1[2,:,:] * 0.11
+    timage_2 = image_2[0,:,:] * 0.3 + image_2[1,:,:] * 0.59 + image_2[2,:,:] * 0.11
+    ssim_channel = np.zeros((3,1))
+    ssim_channel[0] = ssim(image_1[0,:,:],image_2[0,:,:])
+    ssim_channel[1] = ssim(image_1[1,:,:],image_2[1,:,:])
+    ssim_channel[2] = ssim(image_1[2,:,:],image_2[2,:,:])
+
+    return (ssim(timage_1,timage_2), ssim_channel)
+ 
 # Other option: use the distance metric from sciki-learn
 from sklearn.metrics import DistanceMetric
 
