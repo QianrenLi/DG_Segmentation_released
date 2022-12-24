@@ -19,11 +19,14 @@ def analyze_name(path):
     return name
 
 
-def random_crop(img, gt, roi, size=[0.2, 0.8]):
+def random_crop(img, gt, size=[0.5, 0.8]):
     """Crop patches in ROI with random size"""
     import random
-
+    img =np.asarray(img,dtype = np.float64)/255
+    gt = np.asarray(gt,dtype = np.float64)/255
+    roi = gt[:,:,0]
     ih, iw = img.shape[:2]
+
     ip = random.randrange(int(ih * size[0]), int(ih * size[1]))
     ip_l = ip // 2
     ip_r = ip - ip_l
@@ -36,8 +39,8 @@ def random_crop(img, gt, roi, size=[0.2, 0.8]):
             ix = random.randrange(ip_l, iw - ip_r + 1)
             iy = random.randrange(ip_l, iw - ip_r + 1)
 
-    cropped_img = img[iy - ip_l : iy + ip_r, ix - ip_l : ix + ip_r]
-    cropped_gt = gt[iy - ip_l : iy + ip_r, ix - ip_l : ix + ip_r]
+    cropped_img = img[iy - ip_l : iy + ip_r, ix - ip_l : ix + ip_r,:]
+    cropped_gt = gt[iy - ip_l : iy + ip_r, ix - ip_l : ix + ip_r,:]
 
     return cropped_img, cropped_gt
 
@@ -68,18 +71,28 @@ class MNIST(Dataset):
         idx = self._get_index(idx)
         # To enable the same transformation, manual seed is applied
         
+
+
         seed = np.random.randint(5000000)
         # idx is int number
         # self.x is the training set file name vector, self.y is the label set file name vector
         # e.g [v001.bmp,v002.bmp,...,]
+        wh = 1200
         temp_image = Image.open(self.x[idx],mode='r')
+        label_image = Image.open(self.y[idx])
+        # print(temp_image.size)
+
+        # print(temp_image.shape)
+        # import matplotlib.pyplot as plt
+        # plt.imshow(temp_image)
+        # plt.show()
         # Do domain generization
         if self.is_DG != 0:
             # Change into numpy
             temp_image_t = np.asarray(temp_image,dtype = np.float64)/255
 
             # Resize the DG image
-            temp_image_t = cv2.resize(temp_image_t,(32 * 40, 32 * 40))
+            temp_image_t = cv2.resize(temp_image_t,(32 * 12, 32 * 12))
             temp_image_t = np.transpose(temp_image_t, (2,0,1))
             temp_images,_ = domain_generization(temp_image_t,domain=self.is_DG)
             temp_image_t = np.real(temp_images[0])
@@ -87,6 +100,9 @@ class MNIST(Dataset):
             # Change into PIL (H W C)
             temp_image = Image.fromarray(np.uint8(np.clip(np.transpose(temp_image_t, (1, 2, 0)),0,1) * 255))
             # temp_image.show()
+
+        # if self.train == True:
+        #     temp_image,label_image = random_crop(temp_image,label_image)
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
         temp_image = self.im_transform(temp_image)
@@ -104,8 +120,7 @@ class MNIST(Dataset):
 
         # Return the label image:
         # print(self.y)
-        label_image = Image.open(self.y[idx])
-        
+
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
         label_image = self.label_transform(label_image)
@@ -233,7 +248,7 @@ def load_name(train_data_str = "./data/Pro1-SegmentationData/Training_data/data/
     )
 
 
-def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = True,is_color_jitter = True,is_DG = False, \
+def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = True,is_color_jitter = True,is_random_crop = True,is_DG = False, \
                 train_data_str = "./data/Pro1-SegmentationData/Training_data/data/*.bmp", \
                 train_label_str = "./data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
                 valid_data_str = "./data/Pro1-SegmentationData/Training_data/data/*.bmp", \
@@ -255,6 +270,9 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     # print("Length of new inputs:", len(inputs))
     # mean & variance
     normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+    # normalize = transforms.Normalize(mean=[0.26005924, 0.15255839, 0.075675726], std=[5, 5, 5])
+    # normalize = transforms.Normalize(mean = [0.4227116, 0.2817605, 0.22160497], std = [0.289763, 0.2044466, 0.157756])
+    # normalize = transforms.Normalize(mean = [0.26005924, 0.15255839, 0.075675726], std=[0.17948404, 0.10386878, 0.053291164])
 
     X_trainset, X_test = inputs, test_inputs
     y_trainset, y_test = targets, test_targets
@@ -273,14 +291,19 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     # Transformation setting
     input_transform_list = []
     label_transform_list = []
-
     input_transform_list.append(transforms.ToTensor())
     label_transform_list.append(transforms.ToTensor())
-    input_transform_list.append(transforms.Resize([32 * 10,32 * 10]))
-    label_transform_list.append(transforms.Resize([32 * 10, 32 * 10]))
+
+    # Notice the location of eye are generally in [40: 1500] [0: 400] 
+    # if is_random_crop:
+    #     input_transform_list.append(transforms.RandomCrop(600))
+    #     label_transform_list.append(transforms.RandomCrop(600))
+
+    input_transform_list.append(transforms.Resize([32 * 12,32 * 12]))
+    label_transform_list.append(transforms.Resize([32 * 12, 32 * 12]))
     if is_rotate:
-        input_transform_list.append(transforms.RandomRotation(180,expand=False,fill=0))
-        label_transform_list.append(transforms.RandomRotation(180,expand=False,fill=1))
+        input_transform_list.append(transforms.RandomRotation(30,expand=False,fill=0))
+        label_transform_list.append(transforms.RandomRotation(30,expand=False,fill=1))
     if is_translate:
         # 0.1,0.1 is the factor
         input_transform_list.append(transforms.RandomAffine(degrees = 0,translate= (0.1,0.1),fill=0))
@@ -288,11 +311,15 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     if is_vert_flip:
         input_transform_list.append(transforms.RandomVerticalFlip())
         label_transform_list.append(transforms.RandomVerticalFlip())
+        input_transform_list.append(transforms.RandomHorizontalFlip())
+        label_transform_list.append(transforms.RandomHorizontalFlip())
     if is_color_jitter:
-        input_transform_list.append(transforms.ColorJitter(brightness=0.5,contrast=0.5,hue = 0.5))
+        input_transform_list.append(transforms.ColorJitter(brightness=0.3,contrast=0.3, saturation= 0.3))
+    
+        
 
-    input_transform_list.append(transforms.Resize([32 * 10, 32 * 10]))
-    label_transform_list.append(transforms.Resize([32 * 10, 32 * 10]))
+    input_transform_list.append(transforms.Resize([32 * 12, 32 * 12]))
+    label_transform_list.append(transforms.Resize([32 * 12, 32 * 12]))
 
     label_transform_list.append(transforms.Grayscale(1))
     input_transform_list.append(normalize)
@@ -307,16 +334,16 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     )
     test_transform = transforms.Compose(
         [
-            transforms.Resize([256,256]),
             transforms.ToTensor(),
+            transforms.Resize([32*12,32*12]),
             normalize,
         ]
     )
     test_label_transform = transforms.Compose(
         [
-            transforms.Resize([256,256]),
-            transforms.Grayscale(1),
             transforms.ToTensor(),
+            transforms.Grayscale(1),
+            transforms.Resize([32*12,32*12]),
         ]
     )
 
@@ -353,7 +380,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     else:
         return test_dataset
 
-def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_generalized=1,domain = 4):
+def domain_generization(original_image, scaling_factor = 0.03, ratio = 1, num_generalized = 1,domain = 4):
     # Requiring unnormalized input image shape as (C,H,W)
     # domain: 'domain1' = 1, 'domain2' = 2,'domain3' = 3,'random' = 4
     # Return C*H*W images and log normalized fftshit frequency.
@@ -401,9 +428,9 @@ def domain_generization(original_image, scaling_factor = 0.1, ratio = 1, num_gen
 
 
     H_left = np.ceil(H_value/2 - H_value * scaling_factor/2).astype(int)
-    H_right = np.ceil(H_value/2 + H_value * scaling_factor/2).astype(int)
+    H_right = np.ceil(H_value/2 + H_value * scaling_factor/2+1).astype(int)
     W_left = np.ceil(W_value/2 - W_value * scaling_factor/2).astype(int)
-    W_right = np.ceil(W_value/2 + W_value * scaling_factor/2).astype(int)
+    W_right = np.ceil(W_value/2 + W_value * scaling_factor/2+1).astype(int)
 
     indexs = random.sample(range(length_inputs),num_generalized)
     dg_outputs = np.zeros((num_generalized,3,H_value,W_value))

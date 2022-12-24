@@ -225,6 +225,26 @@ seed = 50
 # plt.show()
 # print(np.sum(np.abs(dg_outputs - original_image)))
 
+#######################Transform Test#########################
+
+import matplotlib.pyplot as plt
+import numpy as np
+from dataset import domain_generization, load_dataset
+import torch
+# trainset_temp, _ = load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = True,is_color_jitter = False,is_DG=False)
+trainset_temp, _ = load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = True,is_color_jitter = True,is_DG=0)
+original_image, targets = trainset_temp.__getitem__(0) # Use the first image in training set.
+original_image = original_image / 2 + 0.5
+original_image = original_image.numpy()
+
+target_np = torch.argmax(targets, dim=0).cpu().numpy()
+
+
+plt.imshow(target_np,cmap='gray')
+plt.show()
+plt.imshow(np.transpose(original_image, (1, 2, 0)))
+plt.show()
+#######################Transform Test#########################
 
 # ######################Test Dice Loss####################
 # import torch
@@ -258,10 +278,8 @@ seed = 50
 
 # loss = criterion(a,b)
 # print(loss)
-
-
-
 # ######################End Test Dice Loss################
+
 
 #################### Metric Test #########################
 # #################### MSE ###################
