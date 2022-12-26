@@ -58,7 +58,8 @@ def PSNR_metric(image_1,image_2):
         print("The shape of two images must be the same")
         return
     (MSE_value, channel_MSE) = MSE_metric(image_1,image_2)
-    return (10*np.log10(255/MSE_value),10*np.log10(255/channel_MSE))
+    # return (10*np.log10(255/MSE_value),10*np.log10(255/channel_MSE))
+    return 10*np.log10(255/MSE_value)
 
 def SSIM_metric(image_1,image_2):
     """
@@ -82,7 +83,8 @@ def SSIM_metric(image_1,image_2):
     ssim_channel[1] = ssim(image_1[1,:,:],image_2[1,:,:])
     ssim_channel[2] = ssim(image_1[2,:,:],image_2[2,:,:])
 
-    return (ssim(timage_1,timage_2), ssim_channel)
+    # return (ssim(timage_1,timage_2), ssim_channel)
+    return ssim(timage_1,timage_2)
  
 # Other option: use the distance metric from sciki-learn
 from sklearn.metrics import DistanceMetric
