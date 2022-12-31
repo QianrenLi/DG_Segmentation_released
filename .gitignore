@@ -3,4 +3,4 @@ __pycache__/
 .vs/
 .vscode/
 net.pth
-
+*.pth
