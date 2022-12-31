@@ -25,7 +25,8 @@
 
 ## Training Result
 
-> See more: [project1.ipynb](./project1.ipynb);
+> + See more: [project1.ipynb](./project1.ipynb);
+> + You can download our pre-trained model at <https://github.com/QianrenLi/ad_sig_pro1/releases/tag/v1>.
 
 |                   | **Verification DICE** | **Test1 DICE** | **Test2 DICE** | **Test3 DICE** | **Test1 HD95** | **Test2 HD95** | **Test3 HD95** |
 | ----------------- | --------------------- | -------------- | -------------- | -------------- | -------------- | -------------- | -------------- |
