@@ -15,6 +15,7 @@
   + `./results/DG_result` contains the DG result when the phase spectrum is used.
 - `project1.ipynb` contains results of domain generalization, the feature space representation, training, validation and testing diagram.
 - `dataset.py` this file mainly contains `load_dataset` function to load images with typical dataset format.  Function domain generalization and data augmentation based on transformer is implemented within this file which could be applied by changing input of `load_dataset`.
+- `dis_rep.py` contains distance metric like 2-norm, 1-norm, CS-distance SNR, P-SNR, SSIM, intra-clustering distance, inter-clustering distance.
 - `Result_disp.py` the training result is saved in this file and then be plotted in histogram.
 - `loss_display.py` used to plot loss curve.
 - `pro1.py` is an old training python (not valid now).
