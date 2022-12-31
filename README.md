@@ -5,7 +5,7 @@
 + Training and result display:
   + Run `project1.ipynb`
   + If want check loss curve, run `loss_display.py`
-
++ The model download from release should be move into `./results/model` for testing.
 ## Dependencies
 + `pip install -r requirements.txt`
 ## File Description
