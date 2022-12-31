@@ -1,0 +1,200 @@
+Scale factor 0.300, lambda 1.000, SSIM for domain 1 is: 0.698881 
+Scale factor 0.300, lambda 1.000, SSIM for domain 2 is: 0.895568 
+Scale factor 0.300, lambda 1.000, SSIM for domain 3 is: 0.866696 
+0.820382 
+
+Scale factor 0.300, lambda 0.750, SSIM for domain 1 is: 0.783611 
+Scale factor 0.300, lambda 0.750, SSIM for domain 2 is: 0.922575 
+Scale factor 0.300, lambda 0.750, SSIM for domain 3 is: 0.903649 
+0.869945 
+
+Scale factor 0.300, lambda 0.500, SSIM for domain 1 is: 0.858238 
+Scale factor 0.300, lambda 0.500, SSIM for domain 2 is: 0.951118 
+Scale factor 0.300, lambda 0.500, SSIM for domain 3 is: 0.940167 
+0.916508 
+
+Scale factor 0.300, lambda 0.300, SSIM for domain 1 is: 0.916169 
+Scale factor 0.300, lambda 0.300, SSIM for domain 2 is: 0.975318 
+Scale factor 0.300, lambda 0.300, SSIM for domain 3 is: 0.970003 
+0.953830 
+
+Scale factor 0.200, lambda 1.000, SSIM for domain 1 is: 0.702191 
+Scale factor 0.200, lambda 1.000, SSIM for domain 2 is: 0.899759 
+Scale factor 0.200, lambda 1.000, SSIM for domain 3 is: 0.871062 
+0.824337 
+
+Scale factor 0.200, lambda 0.750, SSIM for domain 1 is: 0.785603 
+Scale factor 0.200, lambda 0.750, SSIM for domain 2 is: 0.924973 
+Scale factor 0.200, lambda 0.750, SSIM for domain 3 is: 0.906174 
+0.872250 
+
+Scale factor 0.200, lambda 0.500, SSIM for domain 1 is: 0.859147 
+Scale factor 0.200, lambda 0.500, SSIM for domain 2 is: 0.952205 
+Scale factor 0.200, lambda 0.500, SSIM for domain 3 is: 0.941319 
+0.917557 
+
+Scale factor 0.200, lambda 0.300, SSIM for domain 1 is: 0.916508 
+Scale factor 0.200, lambda 0.300, SSIM for domain 2 is: 0.975718 
+Scale factor 0.200, lambda 0.300, SSIM for domain 3 is: 0.970427 
+0.954218 
+
+Scale factor 0.100, lambda 1.000, SSIM for domain 1 is: 0.708180 
+Scale factor 0.100, lambda 1.000, SSIM for domain 2 is: 0.907585 
+Scale factor 0.100, lambda 1.000, SSIM for domain 3 is: 0.878570 
+0.831445 
+
+Scale factor 0.100, lambda 0.750, SSIM for domain 1 is: 0.788902 
+Scale factor 0.100, lambda 0.750, SSIM for domain 2 is: 0.929675 
+Scale factor 0.100, lambda 0.750, SSIM for domain 3 is: 0.910539 
+0.876372 
+
+Scale factor 0.100, lambda 0.500, SSIM for domain 1 is: 0.860165 
+Scale factor 0.100, lambda 0.500, SSIM for domain 2 is: 0.954548 
+Scale factor 0.100, lambda 0.500, SSIM for domain 3 is: 0.943402 
+0.919372 
+
+Scale factor 0.100, lambda 0.300, SSIM for domain 1 is: 0.916619 
+Scale factor 0.100, lambda 0.300, SSIM for domain 2 is: 0.976719 
+Scale factor 0.100, lambda 0.300, SSIM for domain 3 is: 0.971298 
+0.954879 
+
+Scale factor 0.050, lambda 1.000, SSIM for domain 1 is: 0.712321 
+Scale factor 0.050, lambda 1.000, SSIM for domain 2 is: 0.913049 
+Scale factor 0.050, lambda 1.000, SSIM for domain 3 is: 0.883432 
+0.836267 
+
+Scale factor 0.050, lambda 0.750, SSIM for domain 1 is: 0.790721 
+Scale factor 0.050, lambda 0.750, SSIM for domain 2 is: 0.933462 
+Scale factor 0.050, lambda 0.750, SSIM for domain 3 is: 0.913762 
+0.879315 
+
+Scale factor 0.050, lambda 0.500, SSIM for domain 1 is: 0.860031 
+Scale factor 0.050, lambda 0.500, SSIM for domain 2 is: 0.956885 
+Scale factor 0.050, lambda 0.500, SSIM for domain 3 is: 0.945519 
+0.920812 
+
+Scale factor 0.050, lambda 0.300, SSIM for domain 1 is: 0.915896 
+Scale factor 0.050, lambda 0.300, SSIM for domain 2 is: 0.977965 
+Scale factor 0.050, lambda 0.300, SSIM for domain 3 is: 0.972636 
+0.955499 
+
+Scale factor 1.000, lambda 1.000, SSIM for domain 1 is: 0.693021 
+Scale factor 1.000, lambda 1.000, SSIM for domain 2 is: 0.889282 
+Scale factor 1.000, lambda 1.000, SSIM for domain 3 is: 0.859979 
+0.814094 
+
+Scale factor 1.000, lambda 0.750, SSIM for domain 1 is: 0.779964 
+Scale factor 1.000, lambda 0.750, SSIM for domain 2 is: 0.918964 
+Scale factor 1.000, lambda 0.750, SSIM for domain 3 is: 0.899738 
+0.866222 
+
+Scale factor 1.000, lambda 0.500, SSIM for domain 1 is: 0.856488 
+Scale factor 1.000, lambda 0.500, SSIM for domain 2 is: 0.949481 
+Scale factor 1.000, lambda 0.500, SSIM for domain 3 is: 0.938376 
+0.914781 
+
+Scale factor 1.000, lambda 0.300, SSIM for domain 1 is: 0.915507 
+Scale factor 1.000, lambda 0.300, SSIM for domain 2 is: 0.974717 
+Scale factor 1.000, lambda 0.300, SSIM for domain 3 is: 0.969341 
+0.953188 
+
+Scale factor 0.800, lambda 1.000, SSIM for domain 1 is: 0.694081 
+Scale factor 0.800, lambda 1.000, SSIM for domain 2 is: 0.890323 
+Scale factor 0.800, lambda 1.000, SSIM for domain 3 is: 0.861131 
+0.815178 
+
+Scale factor 0.800, lambda 0.750, SSIM for domain 1 is: 0.780630 
+Scale factor 0.800, lambda 0.750, SSIM for domain 2 is: 0.919564 
+Scale factor 0.800, lambda 0.750, SSIM for domain 3 is: 0.900410 
+0.866868 
+
+Scale factor 0.800, lambda 0.500, SSIM for domain 1 is: 0.856807 
+Scale factor 0.800, lambda 0.500, SSIM for domain 2 is: 0.949753 
+Scale factor 0.800, lambda 0.500, SSIM for domain 3 is: 0.938684 
+0.915081 
+
+Scale factor 0.800, lambda 0.300, SSIM for domain 1 is: 0.915627 
+Scale factor 0.800, lambda 0.300, SSIM for domain 2 is: 0.974817 
+Scale factor 0.800, lambda 0.300, SSIM for domain 3 is: 0.969455 
+0.953299 
+
+Scale factor 0.500, lambda 1.000, SSIM for domain 1 is: 0.696057 
+Scale factor 0.500, lambda 1.000, SSIM for domain 2 is: 0.892387 
+Scale factor 0.500, lambda 1.000, SSIM for domain 3 is: 0.863342 
+0.817262 
+
+Scale factor 0.500, lambda 0.750, SSIM for domain 1 is: 0.781862 
+Scale factor 0.500, lambda 0.750, SSIM for domain 2 is: 0.920751 
+Scale factor 0.500, lambda 0.750, SSIM for domain 3 is: 0.901698 
+0.868104 
+
+Scale factor 0.500, lambda 0.500, SSIM for domain 1 is: 0.857399 
+Scale factor 0.500, lambda 0.500, SSIM for domain 2 is: 0.950291 
+Scale factor 0.500, lambda 0.500, SSIM for domain 3 is: 0.939274 
+0.915655 
+
+Scale factor 0.500, lambda 0.300, SSIM for domain 1 is: 0.915850 
+Scale factor 0.500, lambda 0.300, SSIM for domain 2 is: 0.975013 
+Scale factor 0.500, lambda 0.300, SSIM for domain 3 is: 0.969673 
+0.953512 
+
+Scale factor 0.006, lambda 1.000, SSIM for domain 1 is: 0.734127 
+Scale factor 0.006, lambda 1.000, SSIM for domain 2 is: 0.941108 
+Scale factor 0.006, lambda 1.000, SSIM for domain 3 is: 0.908903 
+0.861379 
+
+Scale factor 0.006, lambda 0.750, SSIM for domain 1 is: 0.796322 
+Scale factor 0.006, lambda 0.750, SSIM for domain 2 is: 0.957594 
+Scale factor 0.006, lambda 0.750, SSIM for domain 3 is: 0.933058 
+0.895658 
+
+Scale factor 0.006, lambda 0.500, SSIM for domain 1 is: 0.851909 
+Scale factor 0.006, lambda 0.500, SSIM for domain 2 is: 0.975329 
+Scale factor 0.006, lambda 0.500, SSIM for domain 3 is: 0.958878 
+0.928705 
+
+Scale factor 0.006, lambda 0.300, SSIM for domain 1 is: 0.902633 
+Scale factor 0.006, lambda 0.300, SSIM for domain 2 is: 0.988940 
+Scale factor 0.006, lambda 0.300, SSIM for domain 3 is: 0.980296 
+0.957290 
+
+Scale factor 0.010, lambda 1.000, SSIM for domain 1 is: 0.734127 
+Scale factor 0.010, lambda 1.000, SSIM for domain 2 is: 0.941108 
+Scale factor 0.010, lambda 1.000, SSIM for domain 3 is: 0.908903 
+0.861379 
+
+Scale factor 0.010, lambda 0.750, SSIM for domain 1 is: 0.796322 
+Scale factor 0.010, lambda 0.750, SSIM for domain 2 is: 0.957594 
+Scale factor 0.010, lambda 0.750, SSIM for domain 3 is: 0.933058 
+0.895658 
+
+Scale factor 0.010, lambda 0.500, SSIM for domain 1 is: 0.851909 
+Scale factor 0.010, lambda 0.500, SSIM for domain 2 is: 0.975329 
+Scale factor 0.010, lambda 0.500, SSIM for domain 3 is: 0.958878 
+0.928705 
+
+Scale factor 0.010, lambda 0.300, SSIM for domain 1 is: 0.902633 
+Scale factor 0.010, lambda 0.300, SSIM for domain 2 is: 0.988940 
+Scale factor 0.010, lambda 0.300, SSIM for domain 3 is: 0.980296 
+0.957290 
+
+Scale factor 0.015, lambda 1.000, SSIM for domain 1 is: 0.720814 
+Scale factor 0.015, lambda 1.000, SSIM for domain 2 is: 0.933936 
+Scale factor 0.015, lambda 1.000, SSIM for domain 3 is: 0.904794 
+0.853182 
+
+Scale factor 0.015, lambda 0.750, SSIM for domain 1 is: 0.790395 
+Scale factor 0.015, lambda 0.750, SSIM for domain 2 is: 0.951698 
+Scale factor 0.015, lambda 0.750, SSIM for domain 3 is: 0.930691 
+0.890928 
+
+Scale factor 0.015, lambda 0.500, SSIM for domain 1 is: 0.852954 
+Scale factor 0.015, lambda 0.500, SSIM for domain 2 is: 0.971156 
+Scale factor 0.015, lambda 0.500, SSIM for domain 3 is: 0.958161 
+0.927424 
+
+Scale factor 0.015, lambda 0.300, SSIM for domain 1 is: 0.908102 
+Scale factor 0.015, lambda 0.300, SSIM for domain 2 is: 0.986713 
+Scale factor 0.015, lambda 0.300, SSIM for domain 3 is: 0.980419 
+0.958411 
+
