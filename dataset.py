@@ -380,7 +380,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     else:
         return test_dataset
 
-def domain_generization(original_image, scaling_factor = 0.03, ratio = 1, num_generalized = 1,domain = 4,is_Amplitude = True):
+def domain_generization(original_image, scaling_factor = 0.03, ratio = 1, num_generalized = 1,domain = 4,is_Amplitude = True,is_return_Domain = False):
     # Requiring unnormalized input image shape as (C,H,W)
     # domain: 'domain1' = 1, 'domain2' = 2,'domain3' = 3,'random' = 4
     # Return C*H*W images and log normalized fftshit frequency.
@@ -447,6 +447,9 @@ def domain_generization(original_image, scaling_factor = 0.03, ratio = 1, num_ge
         generalized_image = np.array(cv2.resize(generalized_image,(H_value, W_value)),dtype="uint8")
         generalized_image = generalized_image.transpose(2,0,1)
         generalized_image = np.asarray(generalized_image, np.float64) / 255
+
+        if is_return_Domain:
+            generalized_image_dump = generalized_image
         # print(np.max(generalized_image))
         # generalized_image = np.array(cv2.resize(generalized_image,(H_value, W_value)),dtype="uint8")
         # generalized_image = generalized_image.transpose(2,0,1)
@@ -476,7 +479,7 @@ def domain_generization(original_image, scaling_factor = 0.03, ratio = 1, num_ge
         else:
             phase_original_image[:,H_left:H_right,W_left:W_right] \
                 = (1-ratio)* phase_original_image[:,H_left:H_right,W_left:W_right] \
-                + ratio* phase_generalized_image[:,H_left:H_right,W_left:W_right] * power_original/power_generelized
+                + ratio* phase_generalized_image[:,H_left:H_right,W_left:W_right] 
             # amplitude_original_image[:,H_left:H_right,W_left:W_right] = amplitude_original_image[:,H_left:H_right,W_left:W_right] - amplitude_original_image[:,H_left:H_right,W_left:W_right]
             # Output generalized image
             generalized_freq = amplitude_original_image * np.exp(1j*phase_original_image)
@@ -488,5 +491,7 @@ def domain_generization(original_image, scaling_factor = 0.03, ratio = 1, num_ge
         # print(generalized_freq.shape)
         dg_fre_outputs[i] = generalized_freq
     
-
-    return dg_outputs,dg_fre_outputs
+    if is_return_Domain:
+        return dg_outputs,dg_fre_outputs,generalized_image_dump
+    else:
+        return dg_outputs,dg_fre_outputs
