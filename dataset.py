@@ -148,7 +148,7 @@ def load_name(train_data_str = "./data/Pro1-SegmentationData/Training_data/data/
                 valid_data_str = "./data/Pro1-SegmentationData/Training_data/data/*.bmp", \
                 valid_label_str = "./data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
                 test_data_str = "./data/Pro1-SegmentationData/Domain2/data/*.bmp", \
-                test_label_str = "./data/Pro1-SegmentationData/Domain2/label/{}.bmp"):
+                test_label_str = "./data/Pro1-SegmentationData/Domain2/label/{}.bmp",div_factor = 5,fold_id = 4):
 
     inputs, targets, names = [], [], []
     val_inputs, val_targets, val_names = [], [], []
@@ -196,9 +196,9 @@ def load_name(train_data_str = "./data/Pro1-SegmentationData/Training_data/data/
     #         val_names.append(val_name)
     
     data_size = len(inputs)
-    div_factor = 5
+    div_factor = div_factor
     segments_length = int(data_size/div_factor)
-    slice_pos = np.random.randint(div_factor)
+    slice_pos = fold_id
     val_inputs = inputs[slice_pos * segments_length: (slice_pos +1) *segments_length ]
     val_targets = targets[slice_pos * segments_length: (slice_pos +1) *segments_length ]
     val_names = names[slice_pos * segments_length: (slice_pos +1) *segments_length ]
@@ -254,7 +254,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
                 valid_data_str = "./data/Pro1-SegmentationData/Training_data/data/*.bmp", \
                 valid_label_str = "./data/Pro1-SegmentationData/Training_data/label/{}.bmp", \
                 test_data_str = "./data/Pro1-SegmentationData/Domain2/data/*.bmp", \
-                test_label_str = "./data/Pro1-SegmentationData/Domain2/label/{}.bmp"):
+                test_label_str = "./data/Pro1-SegmentationData/Domain2/label/{}.bmp",div_factor = 5, fold_id = 4):
     (
         inputs,
         targets,
@@ -265,7 +265,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
         test_inputs,
         test_targets,
         test_names,
-    ) = load_name(train_data_str,train_label_str,valid_data_str,valid_label_str,test_data_str,test_label_str)
+    ) = load_name(train_data_str,train_label_str,valid_data_str,valid_label_str,test_data_str,test_label_str,div_factor,fold_id)
 
     # print("Length of new inputs:", len(inputs))
     # mean & variance
@@ -380,7 +380,7 @@ def load_dataset(train=True,is_vert_flip = True,is_rotate = True,is_translate = 
     else:
         return test_dataset
 
-def domain_generization(original_image, scaling_factor = 0.03, ratio = 1, num_generalized = 1,domain = 4):
+def domain_generization(original_image, scaling_factor = 0.03, ratio = 1, num_generalized = 1,domain = 4,is_Amplitude = True):
     # Requiring unnormalized input image shape as (C,H,W)
     # domain: 'domain1' = 1, 'domain2' = 2,'domain3' = 3,'random' = 4
     # Return C*H*W images and log normalized fftshit frequency.
@@ -452,21 +452,35 @@ def domain_generization(original_image, scaling_factor = 0.03, ratio = 1, num_ge
         # generalized_image = generalized_image.transpose(2,0,1)
         
         # Do FFT to each channel
-        amplitude_generalized_image = np.abs(np.fft.fftshift(np.fft.fft2(generalized_image,axes=(-2, -1)),axes=(-2, -1)))
-        amplitude_original_image= np.abs(np.fft.fftshift(np.fft.fft2(original_image,axes=(-2, -1)),axes=(-2, -1)))
-        phase_original_image = np.angle(np.fft.fftshift(np.fft.fft2(original_image,axes=(-2, -1)),axes=(-2, -1)))
+        generalized_image_frequency_domain = np.fft.fftshift(np.fft.fft2(generalized_image,axes=(-2, -1)),axes=(-2, -1))
+        original_image_frequency_domain = np.fft.fftshift(np.fft.fft2(original_image,axes=(-2, -1)),axes=(-2, -1))
+
+        amplitude_generalized_image = np.abs(generalized_image_frequency_domain)
+        amplitude_original_image= np.abs(original_image_frequency_domain)
+        phase_generalized_image  = np.angle(generalized_image_frequency_domain)
+        phase_original_image = np.angle(original_image_frequency_domain)
+        
 
         power_generelized = np.linalg.norm(amplitude_generalized_image[:,H_left:H_right,W_left:W_right])
         power_original = np.linalg.norm(amplitude_original_image[:,H_left:H_right,W_left:W_right])
 
+        if is_Amplitude == True:
         # Replace the amplitude
-        amplitude_original_image[:,H_left:H_right,W_left:W_right] \
-            = (1-ratio)* amplitude_original_image[:,H_left:H_right,W_left:W_right] \
-            + ratio* amplitude_generalized_image[:,H_left:H_right,W_left:W_right] * power_original/power_generelized
-        # amplitude_original_image[:,H_left:H_right,W_left:W_right] = amplitude_original_image[:,H_left:H_right,W_left:W_right] - amplitude_original_image[:,H_left:H_right,W_left:W_right]
-        # Output generalized image
-        generalized_freq = amplitude_original_image * np.exp(1j*phase_original_image)
-        generalized_image = np.real(np.fft.ifft2(np.fft.fftshift(generalized_freq,axes=(2,1)),axes=(-2, -1)))
+            amplitude_original_image[:,H_left:H_right,W_left:W_right] \
+                = (1-ratio)* amplitude_original_image[:,H_left:H_right,W_left:W_right] \
+                + ratio* amplitude_generalized_image[:,H_left:H_right,W_left:W_right] * power_original/power_generelized
+            # amplitude_original_image[:,H_left:H_right,W_left:W_right] = amplitude_original_image[:,H_left:H_right,W_left:W_right] - amplitude_original_image[:,H_left:H_right,W_left:W_right]
+            # Output generalized image
+            generalized_freq = amplitude_original_image * np.exp(1j*phase_original_image)
+            generalized_image = np.real(np.fft.ifft2(np.fft.fftshift(generalized_freq,axes=(2,1)),axes=(-2, -1)))
+        else:
+            phase_original_image[:,H_left:H_right,W_left:W_right] \
+                = (1-ratio)* phase_original_image[:,H_left:H_right,W_left:W_right] \
+                + ratio* phase_generalized_image[:,H_left:H_right,W_left:W_right] * power_original/power_generelized
+            # amplitude_original_image[:,H_left:H_right,W_left:W_right] = amplitude_original_image[:,H_left:H_right,W_left:W_right] - amplitude_original_image[:,H_left:H_right,W_left:W_right]
+            # Output generalized image
+            generalized_freq = amplitude_original_image * np.exp(1j*phase_original_image)
+            generalized_image = np.real(np.fft.ifft2(np.fft.fftshift(generalized_freq,axes=(2,1)),axes=(-2, -1)))
 
         # print(generalized_image.shape)
         # print(type(generalized_image))
