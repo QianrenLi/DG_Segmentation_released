@@ -1,5 +1,5 @@
-# Project 1 for advanced signal processing
-
+# DEEP LEARNING BASED MEDICAL IMAGE SEGMENTATION
+> This is a reproduction of "Feddg: Federated domain generalization on medical image segmentation via episodic learning in continuous frequency space".
 ## Usage
 + data file: put file in `./data/`, write your detail link --- training set, validation set, testing set --- into `input_pattern`, `val_input_pattern` and `test_input_pattern`. or by modifying input of `load_dataset`
 + Training and result display:
